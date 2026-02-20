@@ -177,8 +177,9 @@ Install-BPLs/
   Delphi-10.4-Sydney/
   Delphi-11.3-Alexandria/
   Delphi-12.0-Athens/
-  Delphi-13.0-Florence/     ← added
 ```
+
+> A pre-built BPL for Delphi 13 is not included yet. Build it yourself with `Build\msbuild-build.bat 13 Release` and drop the output into a new `Install-BPLs/Delphi-13.0-Florence/` folder.
 
 ---
 
@@ -235,6 +236,6 @@ git push --tags
 | Delphi 10.4 Sydney | 21.0 | — | ✓ |
 | Delphi 11.3 Alexandria | 22.0 | — | ✓ |
 | Delphi 12.0 Athens | 23.0 | `12` | ✓ + Build scripts |
-| Delphi 13.0 Florence | 24.0 | `13` | Build scripts |
+| Delphi 13.0 Florence | 24.0 | `13` | Build scripts only (no pre-built BPL yet) |
 
 > The AI Assistant (Embedded/GitHub Models) requires Delphi 12+ due to use of inline variable declarations (`var x := ...`) and `TNetHTTPClient`.

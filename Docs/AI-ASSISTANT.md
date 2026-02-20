@@ -53,7 +53,16 @@ The active mode is chosen in **Code4D → Settings → AI Assistant (MCP) → Tr
 
 ## 3. Settings Reference
 
-All settings are stored in `%APPDATA%\Code4D\Code4D-Wizard.ini`.
+All settings are stored in an INI file next to the installed BPL:
+```
+<Delphi bin folder>\Code4DWizard\code4d-wizard.ini
+```
+For a typical Delphi 12 install this resolves to:
+```
+C:\Program Files (x86)\Embarcadero\Studio\23.0\bin\Code4DWizard\code4d-wizard.ini
+```
+
+The `mcp.json` configuration is stored separately at `%APPDATA%\Roaming\Code4D\mcp.json`.
 
 ### Common
 | Setting | Description |
