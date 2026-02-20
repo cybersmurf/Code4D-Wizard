@@ -6,7 +6,7 @@
 </p>
 Code4D-Wizard is a wizard/plugin designed to be used in the Delphi IDE. It adds to the Delphi IDE several features and functionality to improve development efficiency, speed and productivity. This Wizard was developed using OTA (Open Tools API)
 
-## 📞 Contatos
+## 📞 Contacts
 
 [![Telegram](https://img.shields.io/badge/Telegram-Join-blue?logo=telegram)](https://t.me/Code4Delphi)
 [![YouTube](https://img.shields.io/badge/YouTube-Join-red?logo=youtube&logoColor=red)](https://www.youtube.com/@code4delphi)
@@ -36,8 +36,8 @@ Code4D-Wizard is a wizard/plugin designed to be used in the Delphi IDE. It adds 
 
 <br/>
 
-# 👨‍🎓 Treinamento completo sobre OTA / Complete OTA training
-[**Acessar treinamento / Access training**](https://hotmart.com/pt-br/marketplace/produtos/delphi-ota-open-tools-api/U81331747Y)
+# 👨‍🎓 Complete OTA Training
+[**Access training**](https://hotmart.com/pt-br/marketplace/produtos/delphi-ota-open-tools-api/U81331747Y)
 
 <br/>‌
 
@@ -103,7 +103,7 @@ Code4D-Wizard is a wizard/plugin designed to be used in the Delphi IDE. It adds 
 
 ‌
 
-### * PopupMenu do Project Manager
+### * Project Manager PopupMenu
 
 ![PopupMenu-Project-Manager.png](https://github.com/Code4Delphi/Code4D-Wizard/blob/master/Images/PopupMenu-Project-Manager.png)
 
@@ -128,7 +128,7 @@ Code4D-Wizard is a wizard/plugin designed to be used in the Delphi IDE. It adds 
 To submit a pull request, follow these steps:
 
 1. Fork the project
-2. Create a new branch (`git checkout -b minha-nova-funcionalidade`)
+2. Create a new branch (`git checkout -b my-new-feature`)
 3. Make your changes
 4. Make the commit (`git commit -am 'Functionality or adjustment message'`)
 5. Push the branch (`git push origin Message about functionality or adjustment`)
