@@ -153,6 +153,11 @@ contains
   C4D.Wizard.AIAssistant.View in '..\Src\AIAssistant\C4D.Wizard.AIAssistant.View.pas' {C4DWizardAIAssistantView},
   C4D.Wizard.IDE.MainMenu.AIAssistant in '..\Src\IDE\MainMenu\C4D.Wizard.IDE.MainMenu.AIAssistant.pas',
   C4D.Wizard.LSP.Diagnostics in '..\Src\LSP\C4D.Wizard.LSP.Diagnostics.pas',
-  C4D.Wizard.LSP.Diagnostics.Generic in '..\Src\LSP\C4D.Wizard.LSP.Diagnostics.Generic.pas';
+  C4D.Wizard.LSP.Diagnostics.Generic in '..\Src\LSP\C4D.Wizard.LSP.Diagnostics.Generic.pas',
+  C4D.Wizard.LSP.Markers in '..\Src\LSP\C4D.Wizard.LSP.Markers.pas',
+  C4D.Wizard.LSP.Diagnostics.Realtime in '..\Src\LSP\C4D.Wizard.LSP.Diagnostics.Realtime.pas',
+  C4D.Wizard.RAG.Queue in '..\Src\RAG\C4D.Wizard.RAG.Queue.pas',
+  C4D.Wizard.RAG.Watcher in '..\Src\RAG\C4D.Wizard.RAG.Watcher.pas',
+  C4D.Wizard.RAG.AutoIndexer in '..\Src\RAG\C4D.Wizard.RAG.AutoIndexer.pas';
 
 end.
