@@ -84,6 +84,8 @@ Code4D-Wizard is a wizard/plugin designed to be used in the Delphi IDE. It adds 
   - **Stdio** — launch an external MCP server as a child process
   - **Embedded (built-in)** — run a fully in-process MCP server with no external dependency. Uses your `GITHUB_TOKEN` (or a Personal Access Token) to call the GitHub Models inference API directly from inside the IDE.
 
+  **Agentic mode** (Embedded transport): enable multi-step task execution where the AI automatically plans, decomposes and executes complex requests using the built-in agent orchestrator (`Src/Agent/`) and a library of Skills (`Src/Skills/`). Domain context is injected via instruction files (`Config/instructions/`).
+
   Built-in AI tools available in Embedded mode:
   | Tool | Description |
   |---|---|
@@ -92,7 +94,7 @@ Code4D-Wizard is a wizard/plugin designed to be used in the Delphi IDE. It adds 
   | `query_docs` | Free-form Delphi / RAD Studio Q&A |
   | `ask_ai` | Generic prompt with optional code context |
 
-  See **[Docs/AI-ASSISTANT.md](Docs/AI-ASSISTANT.md)** for full setup and usage guide.
+  See **[Docs/AI-ASSISTANT.md](Docs/AI-ASSISTANT.md)** for full setup and usage guide including the Agentic Mode reference.
 
 
 ‌

@@ -40,6 +40,18 @@ Code4D-Wizard-master/
 │   │   ├── C4D.Wizard.MCP.Config.pas
 │   │   ├── C4D.Wizard.MCP.EmbeddedServer.pas
 │   │   └── C4D.Wizard.MCP.StdioTransport.pas
+│   ├── Agent/                  # Agentic orchestrator
+│   │   ├── C4D.Wizard.Agent.Core.pas
+│   │   ├── C4D.Wizard.Agent.Planning.pas
+│   │   └── C4D.Wizard.Agent.Memory.pas
+│   ├── Instructions/           # Instruction file loader
+│   │   └── C4D.Wizard.Instructions.Manager.pas
+│   ├── Skills/                 # Skill implementations
+│   │   ├── C4D.Wizard.Skill.Base.pas
+│   │   ├── C4D.Wizard.Skill.CodeAnalysis.pas
+│   │   ├── C4D.Wizard.Skill.Generation.pas
+│   │   ├── C4D.Wizard.Skill.Refactoring.pas
+│   │   └── C4D.Wizard.Skill.Documentation.pas
 │   ├── AIAssistant/            # AI Assistant dialog (VCL form)
 │   ├── Settings/               # Settings model + view
 │   ├── Interfaces/             # Global interfaces
@@ -51,7 +63,16 @@ Code4D-Wizard-master/
 │
 ├── Config/
 │   ├── mcp.json                # Default MCP/GitHub Models config
-│   └── mcp.example.json        # Example with all options
+│   ├── mcp.example.json        # Example with all options
+│   ├── instructions/           # AI system prompt instruction files
+│   │   ├── base.md
+│   │   ├── delphi-expert.md
+│   │   ├── flexgrid.md
+│   │   └── emistr.md
+│   └── skills/                 # Skill definition files (JSON Schema)
+│       ├── analyze_entity.json
+│       ├── generate_service.json
+│       └── refactor_code.json
 │
 ├── Build/
 │   ├── build.ps1               # Universal PowerShell build script
@@ -73,7 +94,7 @@ Code4D-Wizard-master/
 │       └── release.yml         # Auto-release on version tag
 │
 └── Docs/
-    ├── AI-ASSISTANT.md         # AI Assistant setup guide
+    ├── AI-ASSISTANT.md         # AI Assistant setup guide (incl. Agentic Mode)
     └── BUILDING.md             # This file
 ```
 

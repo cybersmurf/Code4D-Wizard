@@ -2,17 +2,24 @@
 
 The AI Assistant integrates a **Model Context Protocol (MCP)** client directly into the Delphi IDE toolbar/menu. It lets you browse available AI tools, send prompts with optional code context, and receive generated code — all without leaving the IDE.
 
+The assistant supports two usage tiers:
+- **Single-tool mode** — select one MCP tool and send a direct prompt
+- **Agentic mode** — the AI plans, decomposes and executes multi-step tasks autonomously
+
 ## Contents
 
 1. [Quick Start — Embedded Mode](#1-quick-start--embedded-mode)
 2. [Transport Modes](#2-transport-modes)
-3. [Settings Reference](#3-settings-reference)
-4. [mcp.json Configuration](#4-mcpjson-configuration)
-5. [Built-in Tools (Embedded Mode)](#5-built-in-tools-embedded-mode)
-6. [HTTP Transport](#6-http-transport)
-7. [Stdio Transport](#7-stdio-transport)
-8. [GitHub Token Setup](#8-github-token-setup)
-9. [Keyboard Shortcuts](#9-keyboard-shortcuts)
+3. [Agentic Mode](#3-agentic-mode)
+4. [Settings Reference](#4-settings-reference)
+5. [mcp.json Configuration](#5-mcpjson-configuration)
+6. [Built-in Tools (Embedded Mode)](#6-built-in-tools-embedded-mode)
+7. [Skills](#7-skills)
+8. [Instructions System](#8-instructions-system)
+9. [HTTP Transport](#9-http-transport)
+10. [Stdio Transport](#10-stdio-transport)
+11. [GitHub Token Setup](#11-github-token-setup)
+12. [Keyboard Shortcuts](#12-keyboard-shortcuts)
 
 ---
 
@@ -35,7 +42,7 @@ The fastest way to get started — no external server required.
 6. Click **OK**
 7. Open **Code4D → AI Assistant** (`Ctrl+Alt+A` by default)
 
-The tool list on the left will populate with the four built-in tools. Select a tool, type a prompt, and press **F5** (or click **Send**).
+The tool list on the left will populate with the built-in tools. Select a tool, type a prompt, and press **F5** (or click **Send**).
 
 ---
 
@@ -49,9 +56,64 @@ The tool list on the left will populate with the four built-in tools. Select a t
 
 The active mode is chosen in **Code4D → Settings → AI Assistant (MCP) → Transport**.
 
+> **Note**: Agentic mode is only available with the **Embedded** transport, as it requires direct access to the in-process MCP server.
+
 ---
 
-## 3. Settings Reference
+## 3. Agentic Mode
+
+Agentic mode enables the AI to **automatically plan and execute multi-step tasks** without manual tool selection. When enabled, the agent:
+
+1. Receives your natural-language request
+2. **Plans** it into discrete steps using the GitHub Models API
+3. **Executes** each step by picking the appropriate MCP tool and parameters
+4. **Accumulates context** from previous steps via in-memory working memory
+5. Returns a consolidated result
+
+### Enabling Agentic Mode
+
+In the AI Assistant dialog (requires **Embedded** transport):
+
+1. Check **Agent mode (multi-step)** in the bottom-left panel
+2. Choose an execution mode from the dropdown
+3. Type your request and press **F5**
+
+### Execution Modes
+
+| Mode | Description |
+|---|---|
+| **Single tool** | Direct tool call — no planning, identical to non-agent mode |
+| **Multi-step** *(default)* | AI decomposes the task and executes each step in sequence |
+| **Autonomous** | Like multi-step, but the agent re-plans and retries on step errors (up to `MaxIterations = 10`) |
+
+### Steps Panel
+
+While the agent runs, the **Steps** memo shows each step live:
+```
+1/3  Analyze entity THREmployee for missing index annotations
+2/3  Generate XData service contract for THREmployee
+3/3  Add audit fields (Created, Modified, CreatedBy, ModifiedBy)
+```
+
+### Example Agentic Prompts
+
+```
+Review the selected entity and generate a complete CRUD XData service with audit logging.
+```
+```
+Refactor this service to use lazy-loaded associations and add XML doc comments.
+```
+
+### MCP Compliance
+
+The agent conforms to **MCP specification 2025-11-25**:
+- Tool discovery: `tools/list` (JSON-RPC 2.0, supports cursor-based pagination)
+- Tool execution: `tools/call` with typed `inputSchema` (JSON Schema draft-07)
+- Agent framework: `Src/Agent/C4D.Wizard.Agent.Core.pas` — `IC4DWizardAgent` / `TC4DWizardAgent`
+
+---
+
+## 4. Settings Reference
 
 All settings are stored in an INI file next to the installed BPL:
 ```
@@ -92,7 +154,7 @@ The `mcp.json` configuration is stored separately at `%APPDATA%\Roaming\Code4D\m
 
 ---
 
-## 4. mcp.json Configuration
+## 5. mcp.json Configuration
 
 The embedded server is also configurable via `%APPDATA%\Code4D\mcp.json`.  
 This file is created with sensible defaults the first time the wizard loads.
@@ -122,7 +184,9 @@ See [Config/mcp.example.json](../Config/mcp.example.json) for all available opti
 
 ---
 
-## 5. Built-in Tools (Embedded Mode)
+## 6. Built-in Tools (Embedded Mode)
+
+Built-in tools implement the MCP `tools/call` interface (JSON-RPC 2.0). Each tool exposes a typed `inputSchema` (JSON Schema draft-07) and returns a `content` array with a `text` block.
 
 ### `analyze_entity`
 Analyses an Aurelius entity class and suggests improvements: missing `[Column]` mappings, index opportunities, naming conventions, nullable fields, etc.
@@ -151,7 +215,7 @@ Generates an XData `ServiceContract` interface and a skeleton service implementa
 ---
 
 ### `query_docs`
-Free-form Delphi / RAD Studio / Aurelius / XData documentation Q&A.
+Free-form Delphi / RAD Studio / TMS Aurelius / XData documentation Q&A.
 
 **Input parameters**
 | Name | Required | Description |
@@ -173,7 +237,39 @@ Generic prompt. Optionally supply a code snippet and a custom system prompt to g
 
 ---
 
-## 6. HTTP Transport
+## 7. Skills
+
+Skills are higher-level operations built on top of the basic MCP tools. They are defined as Delphi classes implementing `ISkill` (`Src/Skills/`) and loaded by the agent for complex multi-step tasks.
+
+| Skill unit | Category | Description |
+|---|---|---|
+| `C4D.Wizard.Skill.CodeAnalysis` | Analysis | Deep entity/service analysis with FlexGrid best-practice checks |
+| `C4D.Wizard.Skill.Generation` | Generation | Full entity + service + DTOs scaffolding |
+| `C4D.Wizard.Skill.Refactoring` | Refactoring | Rename, extract, optimise lazy-loading, add indexes |
+| `C4D.Wizard.Skill.Documentation` | Documentation | Generate XML doc comments and Markdown API docs |
+
+Skill configuration files live in `Config/skills/` (JSON format) and describe input/output contracts, examples, and which instruction files to load.
+
+Custom skills can be registered at runtime via `TSkillRegistry.RegisterSkill()`.
+
+---
+
+## 8. Instructions System
+
+Instructions are **Markdown files** that inject domain context into the AI system prompt. Loaded at startup from `Config/instructions/` by `TC4DWizardInstructionsManager`.
+
+| File | Purpose |
+|---|---|
+| `base.md` | Core code generation rules, Delphi conventions, error handling |
+| `delphi-expert.md` | Inline vars, anonymous methods, modern Delphi patterns |
+| `flexgrid.md` | FlexGrid MES architecture, entity patterns, module naming |
+| `emistr.md` | eMISTR-specific manufacturing execution system patterns |
+
+You can **add your own** `.md` files — they are loaded automatically on the next IDE start. Reference them from a skill JSON: `"instructions": ["base", "my-project"]`.
+
+---
+
+## 9. HTTP Transport
 
 Use this when you have an existing MCP-compatible server running (e.g. a Node.js or Python MCP server).
 
@@ -187,7 +283,7 @@ The client sends JSON-RPC 2.0 requests to `POST {ServerURL}` with `Content-Type:
 
 ---
 
-## 7. Stdio Transport
+## 10. Stdio Transport
 
 Use this to launch any MCP server as a child process.  
 Example — a Node.js server:
@@ -202,7 +298,7 @@ The wizard manages the process lifecycle: **Start Server** / **Stop Server** but
 
 ---
 
-## 8. GitHub Token Setup
+## 11. GitHub Token Setup
 
 ### Option A — Environment variable (recommended)
 Set `GITHUB_TOKEN` in your system environment variables.  
@@ -236,7 +332,7 @@ Full list at [github.com/marketplace/models](https://github.com/marketplace/mode
 
 ---
 
-## 9. Keyboard Shortcuts
+## 12. Keyboard Shortcuts
 
 Default shortcuts can be customised in **Code4D → Settings → AI Assistant**.
 
