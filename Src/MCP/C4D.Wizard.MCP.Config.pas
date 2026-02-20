@@ -18,7 +18,7 @@ unit C4D.Wizard.MCP.Config;
       "temperature": 0.3
     },
     "mcpServers": {
-      "flexgrid": {
+      "mes-architecture": {
         "command": "embedded",
         "tools": ["analyze_entity", "generate_service", "query_docs"]
       }
@@ -89,7 +89,7 @@ const
     '  "mcpServers": {' + #13#10 +
     '    "embedded": {' + #13#10 +
     '      "command": "embedded",' + #13#10 +
-    '      "description": "Built-in tools for Delphi / FlexGrid / eMISTR",' + #13#10 +
+    '      "description": "Built-in tools for Delphi / MES / eMISTR",' + #13#10 +
     '      "tools": ["analyze_entity", "generate_service", "query_docs", "ask_ai"]' + #13#10 +
     '    }' + #13#10 +
     '  }' + #13#10 +

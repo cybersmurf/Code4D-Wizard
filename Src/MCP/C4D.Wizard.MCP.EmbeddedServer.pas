@@ -9,7 +9,7 @@ unit C4D.Wizard.MCP.EmbeddedServer;
   dispatches tool calls directly to handler functions backed by the
   GitHub Models inference API.
 
-  Built-in tools (FlexGrid / eMISTR stack):
+  Built-in tools (Delphi / MES / eMISTR stack):
     analyze_entity       – Review Aurelius entity mappings & suggest fixes
     generate_service     – Generate XData ServiceContract operation
     query_docs           – General Delphi / architecture Q&A
@@ -194,7 +194,7 @@ begin
     'Analyze the entity and return specific, actionable suggestions in plain text.';
   LTool.AddParam('entity_code', 'string', 'Full source code of the entity class');
   LTool.AddParam('module', 'string',
-    'Optional FlexGrid module context (e.g. HR, Inventory)', False);
+    'Optional MES module context (e.g. HR, Inventory)', False);
   RegisterTool(LTool, HandleAnalyzeEntity);
 
   // ----- generate_service -----
@@ -213,7 +213,7 @@ begin
   LTool := TC4DWizardMCPToolDef.Create;
   LTool.Name        := 'query_docs';
   LTool.Description := 'Answer questions about Delphi, Aurelius, XData, ' +
-                       'FlexGrid MES or general Object Pascal development.';
+                       'MES or general Object Pascal development.';
   LTool.AddParam('query', 'string', 'Your question');
   LTool.AddParam('context', 'string',
     'Optional additional context (selected code, error message, etc.)', False);

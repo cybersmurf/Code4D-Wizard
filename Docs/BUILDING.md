@@ -67,7 +67,7 @@ Code4D-Wizard-master/
 │   ├── instructions/           # AI system prompt instruction files
 │   │   ├── base.md
 │   │   ├── delphi-expert.md
-│   │   ├── flexgrid.md
+│   │   ├── mes-architecture.md
 │   │   └── emistr.md
 │   └── skills/                 # Skill definition files (JSON Schema)
 │       ├── analyze_entity.json

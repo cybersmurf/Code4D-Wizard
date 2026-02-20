@@ -4,7 +4,7 @@
   "description": "Generate Delphi entity, XData service contract, or repository class",
   "category": "code-generation",
   "agent_mode": "single-tool",
-  "instructions": ["base", "delphi-expert", "flexgrid"],
+  "instructions": ["base", "delphi-expert", "mes-architecture"],
   "input_schema": {
     "type": "object",
     "properties": {
@@ -20,7 +20,7 @@
       },
       "module": {
         "type": "string",
-        "description": "FlexGrid module context (e.g. HR, Inventory)"
+        "description": "MES module context (e.g. HR, Inventory)"
       },
       "existing_code": {
         "type": "string",

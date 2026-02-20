@@ -67,7 +67,7 @@ begin
     '  - Use [Entity, Automapping] + [Table(''TB_NAME'')]' + #13#10 +
     '  - Include [Id] with TIdGenerator.IdentityOrSequence' + #13#10 +
     '  - Add Created:TDateTime and Modified:TNullableDateTime audit fields' + #13#10 +
-    '  - Follow FlexGrid naming: T{Module}{Entity}  (e.g. THREmployee)' + #13#10 +
+    '  - Follow MES naming: T{Module}{Entity}  (e.g. THREmployee)' + #13#10 +
     '  - Include proper associations with cascade rules' + #13#10 +
     #13#10 +
     'For SERVICES (XData):' + #13#10 +
@@ -104,7 +104,7 @@ begin
 
   LPrompt := Format('Generate a Delphi %s for: %s', [LTarget, LDescription]);
   if LModule <> '' then
-    LPrompt := LPrompt + #13#10 + 'FlexGrid module: ' + LModule;
+    LPrompt := LPrompt + #13#10 + 'MES module: ' + LModule;
   if LExisting <> '' then
     LPrompt := LPrompt + #13#10 + #13#10 + 'Existing code to extend:' + #13#10 + LExisting;
 
@@ -126,7 +126,7 @@ begin
     '{"type":"object","properties":{' +
     '"description":{"type":"string","description":"What to generate"},' +
     '"target":{"type":"string","enum":["entity","service","repository"],"default":"entity"},' +
-    '"module":{"type":"string","description":"FlexGrid module context"},' +
+    '"module":{"type":"string","description":"MES module context"},' +
     '"existing_code":{"type":"string","description":"Optional existing code to extend"}' +
     '},"required":["description"]}') as TJSONObject;
 end;

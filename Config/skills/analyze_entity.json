@@ -1,10 +1,10 @@
 {
   "name": "analyze_entity",
   "version": "1.0",
-  "description": "Deep analysis of Delphi Aurelius entity with FlexGrid best-practices review",
+  "description": "Deep analysis of Delphi Aurelius entity with MES best-practices review",
   "category": "code-analysis",
   "agent_mode": "single-tool",
-  "instructions": ["base", "delphi-expert", "flexgrid"],
+  "instructions": ["base", "delphi-expert", "mes-architecture"],
   "input_schema": {
     "type": "object",
     "properties": {
@@ -15,7 +15,7 @@
       "module": {
         "type": "string",
         "enum": ["HR", "Inventory", "Planning", "Quality", "Stations", "Maintenance"],
-        "description": "FlexGrid module context (optional)"
+        "description": "MES module context (optional)"
       },
       "check_indexes": {
         "type": "boolean",
@@ -78,7 +78,7 @@
           {
             "severity": "warning",
             "line": 1,
-            "message": "Entity name does not follow FlexGrid convention",
+            "message": "Entity name does not follow MES naming convention",
             "suggestion": "Rename to TPlanOrder (T{Module}{Entity})"
           }
         ],

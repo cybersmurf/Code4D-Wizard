@@ -142,7 +142,7 @@ end;
 
 procedure TC4DWizardAgent.LoadSystemContext(const AInstructionsPath: string);
 const
-  C_FILES: array[0..2] of string = ('base', 'delphi-expert', 'flexgrid');
+  C_FILES: array[0..2] of string = ('base', 'delphi-expert', 'mes-architecture');
 var
   LFile  : string;
   LPath  : string;

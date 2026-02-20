@@ -36,7 +36,7 @@ constructor TC4DSkillCodeAnalysis.Create(const AAI: IC4DWizardAIGitHub);
 begin
   inherited;
   FName        := 'analyze_entity';
-  FDescription := 'Deep analysis of Delphi/Aurelius entity or service code with FlexGrid best-practices feedback';
+  FDescription := 'Deep analysis of Delphi/Aurelius entity or service code with MES best-practices feedback';
   FCategory    := 'code-analysis';
 end;
 
@@ -51,7 +51,7 @@ begin
     'severity values: "error" | "warning" | "info"' + #13#10 +
     'Check for: missing [Entity,Automapping], missing [Id], wrong cascade rules,' + #13#10 +
     '  missing audit fields (Created, Modified), N+1 risks, missing indexes,' + #13#10 +
-    '  FlexGrid naming convention (T{Module}{Entity}).' + #13#10 +
+    '  MES naming convention (T{Module}{Entity}).' + #13#10 +
     'Return ONLY valid JSON.';
 end;
 
@@ -73,7 +73,7 @@ begin
 
   LPrompt := 'Analyze this Delphi entity';
   if LModule <> '' then
-    LPrompt := LPrompt + ' (FlexGrid module: ' + LModule + ')';
+    LPrompt := LPrompt + ' (MES module: ' + LModule + ')';
   LPrompt := LPrompt + ':' + #13#10#13#10 + LEntityCode;
 
   LRaw := FAI.GetCompletion(LPrompt, '', BuildSystemPrompt);
@@ -94,7 +94,7 @@ begin
   Result := TJSONObject.ParseJSONValue(
     '{"type":"object","properties":{' +
     '"entity_code":{"type":"string","description":"Complete entity class source code"},' +
-    '"module":{"type":"string","description":"FlexGrid module context (HR/Inventory/Planning/Quality/Stations)"},' +
+    '"module":{"type":"string","description":"MES module context (HR/Inventory/Planning/Quality/Stations)"},' +
     '"check_indexes":{"type":"boolean","default":true},' +
     '"check_associations":{"type":"boolean","default":true}' +
     '},"required":["entity_code"]}') as TJSONObject;

@@ -9,7 +9,7 @@ unit C4D.Wizard.Instructions.Manager;
   Files are identified by their filename without extension:
     base.md           -> key 'base'
     delphi-expert.md  -> key 'delphi-expert'
-    flexgrid.md       -> key 'flexgrid'
+    mes-architecture.md -> key 'mes-architecture'
     emistr.md         -> key 'emistr'
 
   Token substitution: ${var} is replaced with environment variable values.

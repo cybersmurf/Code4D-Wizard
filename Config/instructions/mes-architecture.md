@@ -1,7 +1,7 @@
-# FlexGrid MES Architecture
+# MES Architecture
 
 ## System Overview
-FlexGrid is a modular Manufacturing Execution System built on:
+This project is a modular Manufacturing Execution System built on:
 - **Backend**: TMS Aurelius (ORM) + TMS XData (REST API) + TMS Sparkle
 - **Frontend**: Blazor Server / TMS Web Core
 - **Database**: MariaDB / PostgreSQL
@@ -82,7 +82,7 @@ end;
 - Call `TAuditManager.Log(Entity, Action, UserId)` in each hook
 
 ## Best Practices Checklist
-When generating FlexGrid code:
+When generating MES code:
 - [ ] Entity name follows `T{Module}{Entity}` pattern
 - [ ] Table name follows `TB_{MODULE}_{ENTITY}` pattern
 - [ ] All four audit fields present (Created, Modified, Deleted, CreatedBy)

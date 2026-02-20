@@ -1,7 +1,7 @@
 # eMISTR — Manufacturing Execution System Context
 
 ## What is eMISTR?
-eMISTR is the production execution layer built on top of FlexGrid that manages:
+eMISTR is the production execution layer built on top of the MES platform that manages:
 - **Work Orders** — production orders from ERP → shopfloor execution
 - **Station Terminals** — operator touchscreens for order pickup, scanning, reporting
 - **Quality Gates** — inline inspection at each production step

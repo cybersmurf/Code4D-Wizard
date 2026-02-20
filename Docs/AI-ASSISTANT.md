@@ -109,7 +109,7 @@ Refactor this service to use lazy-loaded associations and add XML doc comments.
 The agent conforms to **MCP specification 2025-11-25**:
 - Tool discovery: `tools/list` (JSON-RPC 2.0, supports cursor-based pagination)
 - Tool execution: `tools/call` with typed `inputSchema` (JSON Schema draft-07)
-- Agent framework: `Src/Agent/C4D.Wizard.Agent.Core.pas` — `IC4DWizardAgent` / `TC4DWizardAgent`
+- **Agent framework**: `Src/Agent/C4D.Wizard.Agent.Core.pas` — `IC4DWizardAgent` / `TC4DWizardAgent`
 
 ---
 
@@ -243,7 +243,7 @@ Skills are higher-level operations built on top of the basic MCP tools. They are
 
 | Skill unit | Category | Description |
 |---|---|---|
-| `C4D.Wizard.Skill.CodeAnalysis` | Analysis | Deep entity/service analysis with FlexGrid best-practice checks |
+| `C4D.Wizard.Skill.CodeAnalysis` | Analysis | Deep entity/service analysis with MES best-practice checks |
 | `C4D.Wizard.Skill.Generation` | Generation | Full entity + service + DTOs scaffolding |
 | `C4D.Wizard.Skill.Refactoring` | Refactoring | Rename, extract, optimise lazy-loading, add indexes |
 | `C4D.Wizard.Skill.Documentation` | Documentation | Generate XML doc comments and Markdown API docs |
@@ -262,7 +262,7 @@ Instructions are **Markdown files** that inject domain context into the AI syste
 |---|---|
 | `base.md` | Core code generation rules, Delphi conventions, error handling |
 | `delphi-expert.md` | Inline vars, anonymous methods, modern Delphi patterns |
-| `flexgrid.md` | FlexGrid MES architecture, entity patterns, module naming |
+| `mes-architecture.md` | MES architecture, entity patterns, module naming |
 | `emistr.md` | eMISTR-specific manufacturing execution system patterns |
 
 You can **add your own** `.md` files — they are loaded automatically on the next IDE start. Reference them from a skill JSON: `"instructions": ["base", "my-project"]`.

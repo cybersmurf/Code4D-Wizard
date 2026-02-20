@@ -14,7 +14,7 @@
   "mcpServers": {
     "embedded": {
       "command": "embedded",
-      "description": "Built-in Delphi / FlexGrid / eMISTR development tools",
+      "description": "Built-in Delphi / MES / eMISTR development tools",
       "tools": [
         "analyze_entity",
         "generate_service",
