@@ -33,9 +33,24 @@ uses
   System.Classes,
   System.JSON,
   System.IOUtils,
+  System.Generics.Collections,
   C4D.Wizard.AI.GitHub;
 
 type
+  // -----------------------------------------------------------------------
+  // External MCP server entry from "mcpServers" in mcp.json (non-embedded)
+  // -----------------------------------------------------------------------
+  TExternalMCPServerConfig = record
+    Name      : string;
+    Command   : string;           // executable path (stdio) or base URL (http)
+    Args      : string;           // command-line arguments, space-separated
+    WorkingDir: string;
+    Transport : string;           // 'stdio' (default) | 'http'
+    Env       : TArray<TPair<string, string>>;
+    Tools     : TArray<string>;   // declared tool names (informational)
+    Enabled   : Boolean;
+  end;
+
   // -----------------------------------------------------------------------
   // Aggregate config returned from Load()
   // -----------------------------------------------------------------------
@@ -50,6 +65,9 @@ type
 
     // Resolved config path (for diagnostics)
     ConfigPath : string;
+
+    // External stdio/http servers from "mcpServers" (non-embedded entries)
+    ExternalServers: TArray<TExternalMCPServerConfig>;
 
     function ToGitHubConfig: TC4DGitHubModelsConfig;
     class function Load(const AConfigPath: string = ''): TC4DWizardMCPConfig; static;
@@ -151,6 +169,69 @@ begin
       end
       else
         Result.GitHubToken := LRaw;
+
+      // Parse external servers (skip entries with command = "embedded")
+      var LServersObj := LJSON.GetValue<TJSONObject>('mcpServers', nil);
+      if Assigned(LServersObj) then
+        for var LP in LServersObj do
+        begin
+          var LSrv := LP.JsonValue as TJSONObject;
+          if not (LSrv is TJSONObject) then Continue;
+          if LSrv.GetValue<string>('command', '').ToLower = 'embedded' then Continue;
+
+          var LExtSrv: TExternalMCPServerConfig;
+          LExtSrv.Name       := LP.JsonString.Value;
+          LExtSrv.Command    := LSrv.GetValue<string>('command', '');
+          LExtSrv.WorkingDir := LSrv.GetValue<string>('workingDir', '');
+          LExtSrv.Transport  := LSrv.GetValue<string>('transport', 'stdio');
+          LExtSrv.Enabled    := LSrv.GetValue<Boolean>('enabled', True);
+
+          // args — accept both a plain string and a JSON array
+          var LArgVal := LSrv.GetValue('args');
+          if LArgVal is TJSONString then
+            LExtSrv.Args := TJSONString(LArgVal).Value
+          else if LArgVal is TJSONArray then
+          begin
+            var LArgParts := TStringList.Create;
+            try
+              for var AJ := 0 to TJSONArray(LArgVal).Count - 1 do
+              begin
+                var LArgItem := TJSONArray(LArgVal).Items[AJ].Value;
+                if LArgItem.Contains(' ') then
+                  LArgParts.Add('"' + LArgItem + '"')
+                else
+                  LArgParts.Add(LArgItem);
+              end;
+              LExtSrv.Args := string.Join(' ', LArgParts.ToStringArray);
+            finally
+              LArgParts.Free;
+            end;
+          end
+          else
+            LExtSrv.Args := '';
+
+          // env — resolve ${env:VAR} tokens
+          var LEnvObj := LSrv.GetValue<TJSONObject>('env', nil);
+          LExtSrv.Env := [];
+          if Assigned(LEnvObj) then
+            for var EP in LEnvObj do
+            begin
+              var LVal := EP.JsonValue.Value;
+              if LVal.StartsWith('${env:', True) and LVal.EndsWith('}') then
+                LVal := GetEnvironmentVariable(LVal.Substring(6, LVal.Length - 7));
+              LExtSrv.Env := LExtSrv.Env +
+                [TPair<string, string>.Create(EP.JsonString.Value, LVal)];
+            end;
+
+          // tools array (informational — used by registry build only)
+          var LToolsArr := LSrv.GetValue<TJSONArray>('tools', nil);
+          LExtSrv.Tools := [];
+          if Assigned(LToolsArr) then
+            for var TJ := 0 to LToolsArr.Count - 1 do
+              LExtSrv.Tools := LExtSrv.Tools + [LToolsArr.Items[TJ].Value];
+
+          Result.ExternalServers := Result.ExternalServers + [LExtSrv];
+        end;
     finally
       LJSON.Free;
     end;

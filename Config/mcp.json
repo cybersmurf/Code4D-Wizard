@@ -12,6 +12,19 @@
     "fallbackModels": ["claude-3.5-sonnet", "o1-preview"]
   },
   "mcpServers": {
+    "mcp-emistr-docs": {
+      "command": "C:\\emistr_dev_mcp\\.venv\\Scripts\\python.exe",
+      "args": ["C:\\emistr_dev_mcp\\mcp-emistr-docs\\server.py"],
+      "transport": "stdio",
+      "enabled": true,
+      "env": {
+        "CHROMA_HOST": "192.168.99.40",
+        "CHROMA_PORT": "6661",
+        "OLLAMA_HOST": "http://192.168.220.6:11434",
+        "OLLAMA_EMBED_MODEL": "mxbai-embed-large:latest"
+      },
+      "tools": ["search_emistr_docs", "search_emistr_code"]
+    },
     "delphi_assistant": {
       "command": "embedded",
       "description": "Universal Delphi development assistant",

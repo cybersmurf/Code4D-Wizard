@@ -63,6 +63,7 @@ type
     procedure lbToolsClick(Sender: TObject);
   private
     FMCPClient: IC4DWizardMCPClient;
+    FRegistry : IC4DWizardMCPServerRegistry;  // aggregates primary + external servers
     FTools: TC4DWizardMCPToolList;
     // Agentic mode controls (created dynamically)
     FPnAgent   : TPanel;
@@ -92,7 +93,9 @@ implementation
 uses
   C4D.Wizard.Settings.Model,
   C4D.Wizard.AI.GitHub,
-  C4D.Wizard.Utils.OTA;
+  C4D.Wizard.Utils.OTA,
+  C4D.Wizard.MCP.Config,
+  C4D.Wizard.MCP.ServerRegistry;
 
 {$R *.dfm}
 
@@ -169,7 +172,8 @@ end;
 
 procedure TC4DWizardAIAssistantView.FormDestroy(Sender: TObject);
 begin
-  FAgent := nil;   // interface ref — released automatically
+  FAgent     := nil;   // interface ref — released automatically
+  FRegistry  := nil;
   FMCPClient := nil;
 end;
 
@@ -218,6 +222,7 @@ begin
       end;
     end;
     SetStatus('Server running (PID ' + FMCPClient.ServerPID.ToString + ') — loading tools…', False);
+    FRegistry := TC4DWizardMCPServerRegistry.New(TC4DWizardMCPConfig.Load, FMCPClient);
     LoadTools;
   end
   else if LTransport = 2 then
@@ -235,6 +240,7 @@ begin
     lblServerURL.Caption := 'Embedded · GitHub Models · ' + LCfg.Model;
     UpdateServerButtons;
     SetStatus('Embedded server active — loading tools…', True);
+    FRegistry := TC4DWizardMCPServerRegistry.New(TC4DWizardMCPConfig.Load, FMCPClient);
     LoadTools;
     // Create agent backed by the embedded server
     FAgent := TC4DWizardAgent.New(
@@ -252,6 +258,7 @@ begin
     FMCPClient.Timeout(C4DWizardSettingsModel.MCPTimeout);
     UpdateServerButtons;
     SetStatus('Connecting…', False);
+    FRegistry := TC4DWizardMCPServerRegistry.New(TC4DWizardMCPConfig.Load, FMCPClient);
     LoadTools;
   end;
 end;
@@ -300,7 +307,7 @@ begin
   lbTools.Items.BeginUpdate;
   try
     lbTools.Items.Clear;
-    FTools := FMCPClient.ListTools;
+    FTools := FRegistry.ListAllTools;
     for var LTool in FTools do
     begin
       var LCaption := LTool.Name;
@@ -318,8 +325,9 @@ begin
     lbTools.Items.EndUpdate;
   end;
 
-  if FMCPClient.IsConnected then
-    SetStatus(Format('%d tool(s) loaded', [lbTools.Items.Count]))
+  if FRegistry.IsReady then
+    SetStatus(Format('%d tool(s) loaded  (%d server(s))',
+      [lbTools.Items.Count, FRegistry.ServerCount]))
   else
     SetStatus('Connection failed: ' + FMCPClient.LastError, False);
 end;
@@ -421,7 +429,7 @@ begin
     if LCtx.CursorLine > 0 then
       LArgs.AddPair('cursor_line', TJSONNumber.Create(LCtx.CursorLine));
 
-    LResult := FMCPClient.CallTool(LToolName, LArgs);
+    LResult := FRegistry.CallTool(LToolName, LArgs);
   finally
     LArgs.Free;
   end;
@@ -458,6 +466,7 @@ end;
 procedure TC4DWizardAIAssistantView.btnReconnectClick(Sender: TObject);
 begin
   SetStatus('Reconnecting…', False);
+  FRegistry  := nil;
   FMCPClient := nil;
   InitMCPClient;
 end;

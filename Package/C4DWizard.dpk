@@ -140,6 +140,7 @@ contains
   C4D.Wizard.MCP.EmbeddedServer in '..\Src\MCP\C4D.Wizard.MCP.EmbeddedServer.pas',
   C4D.Wizard.MCP.StdioTransport in '..\Src\MCP\C4D.Wizard.MCP.StdioTransport.pas',
   C4D.Wizard.MCP.Client in '..\Src\MCP\C4D.Wizard.MCP.Client.pas',
+  C4D.Wizard.MCP.ServerRegistry in '..\Src\MCP\C4D.Wizard.MCP.ServerRegistry.pas',
   C4D.Wizard.Utils.IDE.Context in '..\Src\Utils\C4D.Wizard.Utils.IDE.Context.pas',
   C4D.Wizard.Instructions.Manager in '..\Src\Instructions\C4D.Wizard.Instructions.Manager.pas',
   C4D.Wizard.Agent.Memory in '..\Src\Agent\C4D.Wizard.Agent.Memory.pas',
