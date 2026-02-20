@@ -96,6 +96,7 @@ implementation
 uses
   C4D.Wizard.Utils,
   C4D.Wizard.Utils.OTA,
+  C4D.Wizard.Interfaces,
   C4D.Wizard.Settings.Model,
   C4D.Wizard.IDE.MainMenu,
   C4D.Wizard.IDE.Shortcuts.BlockKeyInsert;
@@ -188,8 +189,11 @@ begin
 end;
 
 procedure TC4DWizardSettingsView.WriteConfigurationScreen;
+var
+  LModel: IC4DWizardSettingsModel;
 begin
-  C4DWizardSettingsModel
+  LModel := C4DWizardSettingsModel;
+  LModel
     .ShortcutUsesOrganizationUse(ckShortcutUsesOrganizationUse.Checked)
     .ShortcutUsesOrganization(ShortCutToText(edtShortcutUsesOrganization.HotKey))
     .ShortcutReopenFileHistoryUse(ckShortcutReopenFileHistoryUse.Checked)
@@ -211,17 +215,18 @@ begin
     .ShortcutGitHubDesktopUse(ckShortcutGitHubDesktopUse.Checked)
     .ShortcutGitHubDesktop(ShortCutToText(edtShortcutGitHubDesktop.HotKey))
     .BlockKeyInsert(ckBlockKeyInsert.Checked)
-    .BeforeCompilingCheckRunning(ckBeforeCompilingCheckRunning.Checked)
-    .MCPServerURL(edtMCPServerURL.Text.Trim)
-    .MCPAPIKey(edtMCPAPIKey.Text.Trim)
-    .MCPTimeout(StrToIntDef(edtMCPTimeout.Text.Trim, 30000))
+    .BeforeCompilingCheckRunning(ckBeforeCompilingCheckRunning.Checked);
+  LModel
+    .MCPServerURL(Trim(edtMCPServerURL.Text))
+    .MCPAPIKey(Trim(edtMCPAPIKey.Text))
+    .MCPTimeout(StrToIntDef(Trim(edtMCPTimeout.Text), 30000))
     .MCPTransportType(cmbMCPTransport.ItemIndex)
-    .MCPCommand(edtMCPCommand.Text.Trim)
-    .MCPArgs(edtMCPArgs.Text.Trim)
-    .MCPWorkingDir(edtMCPWorkingDir.Text.Trim)
-    .GitHubToken(edtGitHubToken.Text.Trim)
-    .GitHubModel(edtGitHubModel.Text.Trim)
-    .GitHubEndpoint(edtGitHubEndpoint.Text.Trim)
+    .MCPCommand(Trim(edtMCPCommand.Text))
+    .MCPArgs(Trim(edtMCPArgs.Text))
+    .MCPWorkingDir(Trim(edtMCPWorkingDir.Text))
+    .GitHubToken(Trim(edtGitHubToken.Text))
+    .GitHubModel(Trim(edtGitHubModel.Text))
+    .GitHubEndpoint(Trim(edtGitHubEndpoint.Text))
     .ShortcutAIAssistantUse(ckShortcutAIAssistantUse.Checked)
     .ShortcutAIAssistant(ShortCutToText(edtShortcutAIAssistant.HotKey))
     .WriteIniFile;

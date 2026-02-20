@@ -16,6 +16,7 @@ uses
   Vcl.ExtCtrls,
   Vcl.Clipbrd,
   C4D.Wizard.MCP.Client,
+  C4D.Wizard.Agent.Core,
   C4D.Wizard.Utils.IDE.Context;
 
 type
@@ -63,11 +64,22 @@ type
   private
     FMCPClient: IC4DWizardMCPClient;
     FTools: TC4DWizardMCPToolList;
+    // Agentic mode controls (created dynamically)
+    FPnAgent   : TPanel;
+    FChkAgent  : TCheckBox;
+    FCmbMode   : TComboBox;
+    FMemoSteps : TMemo;
+    FAgent     : IC4DWizardAgent;
     procedure InitMCPClient;
     procedure LoadTools;
     procedure SetStatus(const AText: string; AConnected: Boolean = True);
     procedure SetConnected(AConnected: Boolean);
     procedure UpdateServerButtons;
+    procedure BuildAgentPanel;
+    procedure ChkAgentClick(Sender: TObject);
+    procedure ExecuteWithAgent;
+    procedure AgentStepCallback(const AStep: string; AIndex, ATotal: Integer;
+      const AResult: TJSONObject);
   public
     constructor Create(AOwner: TComponent); override;
   end;
@@ -92,10 +104,72 @@ end;
 procedure TC4DWizardAIAssistantView.FormCreate(Sender: TObject);
 begin
   TC4DWizardUtilsOTA.IDEThemingAll(TC4DWizardAIAssistantView, Self);
+  BuildAgentPanel;
+end;
+
+procedure TC4DWizardAIAssistantView.BuildAgentPanel;
+var
+  LLbl: TLabel;
+begin
+  // Panel docked to the bottom of pnLeft (below tool list)
+  FPnAgent := TPanel.Create(Self);
+  FPnAgent.Parent := pnLeft;
+  FPnAgent.Align := alBottom;
+  FPnAgent.Height := 140;
+  FPnAgent.BevelOuter := bvNone;
+  FPnAgent.Caption := '';
+
+  FChkAgent := TCheckBox.Create(Self);
+  FChkAgent.Parent := FPnAgent;
+  FChkAgent.Caption := 'Agent mode (multi-step)';
+  FChkAgent.Left := 6;
+  FChkAgent.Top := 6;
+  FChkAgent.Width := 180;
+  FChkAgent.OnClick := ChkAgentClick;
+
+  LLbl := TLabel.Create(Self);
+  LLbl.Parent := FPnAgent;
+  LLbl.Caption := 'Mode:';
+  LLbl.Left := 6;
+  LLbl.Top := 30;
+
+  FCmbMode := TComboBox.Create(Self);
+  FCmbMode.Parent := FPnAgent;
+  FCmbMode.Style := csDropDownList;
+  FCmbMode.Left := 6;
+  FCmbMode.Top := 46;
+  FCmbMode.Width := 180;
+  FCmbMode.Items.Add('Single tool');
+  FCmbMode.Items.Add('Multi-step');
+  FCmbMode.Items.Add('Autonomous');
+  FCmbMode.ItemIndex := 1;
+  FCmbMode.Enabled := False;
+
+  LLbl := TLabel.Create(Self);
+  LLbl.Parent := FPnAgent;
+  LLbl.Caption := 'Steps:';
+  LLbl.Left := 6;
+  LLbl.Top := 74;
+
+  FMemoSteps := TMemo.Create(Self);
+  FMemoSteps.Parent := FPnAgent;
+  FMemoSteps.Left := 6;
+  FMemoSteps.Top := 90;
+  FMemoSteps.Width := 180;
+  FMemoSteps.Height := 44;
+  FMemoSteps.ReadOnly := True;
+  FMemoSteps.ScrollBars := ssVertical;
+end;
+
+procedure TC4DWizardAIAssistantView.ChkAgentClick(Sender: TObject);
+begin
+  FCmbMode.Enabled := FChkAgent.Checked;
+  FMemoSteps.Enabled := FChkAgent.Checked;
 end;
 
 procedure TC4DWizardAIAssistantView.FormDestroy(Sender: TObject);
 begin
+  FAgent := nil;   // interface ref — released automatically
   FMCPClient := nil;
 end;
 
@@ -162,6 +236,10 @@ begin
     UpdateServerButtons;
     SetStatus('Embedded server active — loading tools…', True);
     LoadTools;
+    // Create agent backed by the embedded server
+    FAgent := TC4DWizardAgent.New(
+      FMCPClient.EmbeddedServer,
+      TC4DWizardAIGitHub.New(LCfg));
   end
   else
   begin
@@ -320,6 +398,13 @@ begin
   // Resolve the true tool name (strip the description suffix added for display)
   LToolName := FTools[lbTools.ItemIndex].Name;
 
+  // Agent mode intercepts the send
+  if Assigned(FChkAgent) and FChkAgent.Checked and Assigned(FAgent) then
+  begin
+    ExecuteWithAgent;
+    Exit;
+  end;
+
   memoResponse.Lines.Clear;
   memoResponse.Lines.Add('Calling tool "' + LToolName + '"…');
   Application.ProcessMessages;
@@ -375,6 +460,58 @@ begin
   SetStatus('Reconnecting…', False);
   FMCPClient := nil;
   InitMCPClient;
+end;
+
+procedure TC4DWizardAIAssistantView.ExecuteWithAgent;
+var
+  LResult: TJSONObject;
+begin
+  FMemoSteps.Clear;
+  memoResponse.Lines.Clear;
+  memoResponse.Lines.Add('Agent running…');
+  Application.ProcessMessages;
+  btnSend.Enabled := False;
+
+  // Wire step callback to populate FMemoSteps live
+  FAgent.OnStep := AgentStepCallback;
+
+  try
+    var LMode: TAgentMode;
+    case FCmbMode.ItemIndex of
+      0: LMode := amSingleTool;
+      2: LMode := amAutonomous;
+    else
+      LMode := amMultiStep;
+    end;
+
+    LResult := FAgent.Execute(memoPrompt.Lines.Text.Trim, '', LMode);
+    try
+      memoResponse.Lines.Clear;
+      if Assigned(LResult) then
+        memoResponse.Lines.Text := LResult.GetValue<string>('result', LResult.ToJSON)
+      else
+        memoResponse.Lines.Add('(no result)');
+      SetStatus('Agent completed');
+    finally
+      LResult.Free;
+    end;
+  except
+    on E: Exception do
+    begin
+      memoResponse.Lines.Clear;
+      memoResponse.Lines.Add('[AGENT ERROR] ' + E.Message);
+      SetStatus('Agent error', False);
+    end;
+  end;
+
+  btnSend.Enabled := FMCPClient.IsConnected and (lbTools.ItemIndex >= 0);
+end;
+
+procedure TC4DWizardAIAssistantView.AgentStepCallback(
+  const AStep: string; AIndex, ATotal: Integer; const AResult: TJSONObject);
+begin
+  FMemoSteps.Lines.Add(Format('%d/%d  %s', [AIndex + 1, ATotal, AStep]));
+  Application.ProcessMessages;
 end;
 
 end.

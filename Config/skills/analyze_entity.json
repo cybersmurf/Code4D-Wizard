@@ -1,0 +1,89 @@
+{
+  "name": "analyze_entity",
+  "version": "1.0",
+  "description": "Deep analysis of Delphi Aurelius entity with FlexGrid best-practices review",
+  "category": "code-analysis",
+  "agent_mode": "single-tool",
+  "instructions": ["base", "delphi-expert", "flexgrid"],
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "entity_code": {
+        "type": "string",
+        "description": "Complete entity class source code"
+      },
+      "module": {
+        "type": "string",
+        "enum": ["HR", "Inventory", "Planning", "Quality", "Stations", "Maintenance"],
+        "description": "FlexGrid module context (optional)"
+      },
+      "check_indexes": {
+        "type": "boolean",
+        "default": true,
+        "description": "Check for missing database indexes"
+      },
+      "check_associations": {
+        "type": "boolean",
+        "default": true,
+        "description": "Check association definitions and cascade rules"
+      }
+    },
+    "required": ["entity_code"]
+  },
+  "output_schema": {
+    "type": "object",
+    "properties": {
+      "issues": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "severity": { "type": "string", "enum": ["error", "warning", "info"] },
+            "line":    { "type": "integer" },
+            "message": { "type": "string" },
+            "suggestion": { "type": "string" }
+          }
+        }
+      },
+      "suggested_code": {
+        "type": "string",
+        "description": "Corrected entity source code (only if changes needed)"
+      },
+      "summary": {
+        "type": "string",
+        "description": "Plain-text analysis summary"
+      }
+    }
+  },
+  "examples": [
+    {
+      "input": {
+        "entity_code": "[Entity]\nTOrder = class\n  FId: Integer;\nend;",
+        "module": "Planning"
+      },
+      "output": {
+        "issues": [
+          {
+            "severity": "error",
+            "line": 1,
+            "message": "Missing [Automapping] attribute",
+            "suggestion": "Use [Entity, Automapping] for automatic column mapping"
+          },
+          {
+            "severity": "error",
+            "line": 3,
+            "message": "Missing [Id] attribute on FId",
+            "suggestion": "Add [Id('FId', TIdGenerator.IdentityOrSequence)]"
+          },
+          {
+            "severity": "warning",
+            "line": 1,
+            "message": "Entity name does not follow FlexGrid convention",
+            "suggestion": "Rename to TPlanOrder (T{Module}{Entity})"
+          }
+        ],
+        "summary": "2 errors, 1 warning. Entity is missing required ORM attributes."
+      }
+    }
+  ]
+}

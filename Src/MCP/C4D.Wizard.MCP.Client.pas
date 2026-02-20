@@ -74,6 +74,8 @@ type
     function StartServer: Boolean;
     procedure StopServer;
     function ServerPID: Integer;
+    // Embedded transport
+    function EmbeddedServer: IC4DWizardMCPEmbeddedServer;
   end;
 
   // ------------------------------------------------------------------
@@ -115,6 +117,7 @@ type
     function StartServer: Boolean;
     procedure StopServer;
     function ServerPID: Integer;
+    function EmbeddedServer: IC4DWizardMCPEmbeddedServer;
   public
     class function New(const AServerURL: string = 'http://localhost:8080/mcp'): IC4DWizardMCPClient;
     class function NewHTTP(const AServerURL: string = 'http://localhost:8080/mcp'): IC4DWizardMCPClient;
@@ -454,6 +457,11 @@ begin
     Result := FStdioTransport.ProcessID
   else
     Result := 0;
+end;
+
+function TC4DWizardMCPClient.EmbeddedServer: IC4DWizardMCPEmbeddedServer;
+begin
+  Result := FEmbeddedServer;
 end;
 
 { ---- Initialize ---- }

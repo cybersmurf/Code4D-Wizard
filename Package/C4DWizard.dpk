@@ -141,6 +141,15 @@ contains
   C4D.Wizard.MCP.StdioTransport in '..\Src\MCP\C4D.Wizard.MCP.StdioTransport.pas',
   C4D.Wizard.MCP.Client in '..\Src\MCP\C4D.Wizard.MCP.Client.pas',
   C4D.Wizard.Utils.IDE.Context in '..\Src\Utils\C4D.Wizard.Utils.IDE.Context.pas',
+  C4D.Wizard.Instructions.Manager in '..\Src\Instructions\C4D.Wizard.Instructions.Manager.pas',
+  C4D.Wizard.Agent.Memory in '..\Src\Agent\C4D.Wizard.Agent.Memory.pas',
+  C4D.Wizard.Agent.Planning in '..\Src\Agent\C4D.Wizard.Agent.Planning.pas',
+  C4D.Wizard.Agent.Core in '..\Src\Agent\C4D.Wizard.Agent.Core.pas',
+  C4D.Wizard.Skill.Base in '..\Src\Skills\C4D.Wizard.Skill.Base.pas',
+  C4D.Wizard.Skill.CodeAnalysis in '..\Src\Skills\C4D.Wizard.Skill.CodeAnalysis.pas',
+  C4D.Wizard.Skill.Generation in '..\Src\Skills\C4D.Wizard.Skill.Generation.pas',
+  C4D.Wizard.Skill.Refactoring in '..\Src\Skills\C4D.Wizard.Skill.Refactoring.pas',
+  C4D.Wizard.Skill.Documentation in '..\Src\Skills\C4D.Wizard.Skill.Documentation.pas',
   C4D.Wizard.AIAssistant.View in '..\Src\AIAssistant\C4D.Wizard.AIAssistant.View.pas' {C4DWizardAIAssistantView},
   C4D.Wizard.IDE.MainMenu.AIAssistant in '..\Src\IDE\MainMenu\C4D.Wizard.IDE.MainMenu.AIAssistant.pas';
 

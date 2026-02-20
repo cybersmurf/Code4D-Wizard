@@ -1,0 +1,40 @@
+{
+  "name": "generate_service",
+  "version": "1.0",
+  "description": "Generate Delphi entity, XData service contract, or repository class",
+  "category": "code-generation",
+  "agent_mode": "single-tool",
+  "instructions": ["base", "delphi-expert", "flexgrid"],
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "description": {
+        "type": "string",
+        "description": "Description of what to generate"
+      },
+      "target": {
+        "type": "string",
+        "enum": ["entity", "service", "repository"],
+        "default": "entity",
+        "description": "Type of code to generate"
+      },
+      "module": {
+        "type": "string",
+        "description": "FlexGrid module context (e.g. HR, Inventory)"
+      },
+      "existing_code": {
+        "type": "string",
+        "description": "Optional existing code to extend or complement"
+      }
+    },
+    "required": ["description"]
+  },
+  "output_schema": {
+    "type": "object",
+    "properties": {
+      "unit_name": { "type": "string", "description": "Pascal unit name" },
+      "source_code": { "type": "string", "description": "Generated Delphi source" },
+      "notes": { "type": "string", "description": "Usage notes and next steps" }
+    }
+  }
+}

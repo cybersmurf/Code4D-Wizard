@@ -31,5 +31,8 @@
   "delphi.compilerPath": "C:/Program Files (x86)/Embarcadero/Studio/24.0/bin/dcc64.exe",
   "delphi.namespaceRoot": "${workspaceFolder}/Src",
   "pascal.enableCodeLens": true,
-  "pascal.enableHover": true
+  "pascal.enableHover": true,
+  "chat.tools.terminal.autoApprove": {
+    "git add": true
+  }
 }
