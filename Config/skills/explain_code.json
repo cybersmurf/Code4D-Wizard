@@ -1,0 +1,70 @@
+{
+  "name": "explain_code",
+  "version": "1.0",
+  "description": "Explain Delphi code in natural language with context",
+  "category": "documentation",
+  "agent_mode": "single-tool",
+
+  "instructions": ["base", "delphi-expert"],
+
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "code": {
+        "type": "string",
+        "description": "Code to explain"
+      },
+      "detail_level": {
+        "type": "string",
+        "enum": ["brief", "detailed", "expert"],
+        "default": "detailed",
+        "description": "Level of explanation detail"
+      },
+      "target_audience": {
+        "type": "string",
+        "enum": ["beginner", "intermediate", "expert"],
+        "default": "intermediate",
+        "description": "Target audience skill level"
+      },
+      "include_examples": {
+        "type": "boolean",
+        "default": true,
+        "description": "Include usage examples in the explanation"
+      }
+    },
+    "required": ["code"]
+  },
+
+  "output_schema": {
+    "type": "object",
+    "properties": {
+      "summary": {
+        "type": "string",
+        "description": "One-line summary"
+      },
+      "detailed_explanation": {
+        "type": "string",
+        "description": "Detailed explanation with context"
+      },
+      "key_concepts": {
+        "type": "array",
+        "items": { "type": "string" },
+        "description": "Important concepts used"
+      },
+      "examples": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "description": { "type": "string" },
+            "code":        { "type": "string" }
+          }
+        }
+      },
+      "related_topics": {
+        "type": "array",
+        "items": { "type": "string" }
+      }
+    }
+  }
+}

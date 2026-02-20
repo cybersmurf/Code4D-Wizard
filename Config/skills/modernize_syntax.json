@@ -1,0 +1,62 @@
+{
+  "name": "modernize_syntax",
+  "version": "1.0",
+  "description": "Update Delphi code to use modern language features",
+  "category": "refactoring",
+  "agent_mode": "single-tool",
+
+  "instructions": ["base", "delphi-expert"],
+
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "code": {
+        "type": "string",
+        "description": "Legacy code to modernize"
+      },
+      "target_version": {
+        "type": "string",
+        "enum": ["Delphi 10.3 Rio", "Delphi 10.4 Sydney", "Delphi 11 Alexandria", "Delphi 12 Athens", "Delphi 13 Florence"],
+        "default": "Delphi 12 Athens",
+        "description": "Target Delphi version"
+      },
+      "features": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "enum": [
+            "inline_variables",
+            "generics",
+            "anonymous_methods",
+            "attributes",
+            "class_helpers",
+            "parallel_library",
+            "managed_records"
+          ]
+        },
+        "description": "Specific modern features to apply (empty = all applicable)"
+      }
+    },
+    "required": ["code"]
+  },
+
+  "output_schema": {
+    "type": "object",
+    "properties": {
+      "modernized_code": { "type": "string" },
+      "changes": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "line":        { "type": "integer" },
+            "feature":     { "type": "string" },
+            "before":      { "type": "string" },
+            "after":       { "type": "string" },
+            "explanation": { "type": "string" }
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,20 +1,69 @@
-#  Code4D-Wizard - Wizard for Delphi IDE
-<p align="center">
-  <a href="https://github.com/Code4Delphi/Code4D-Wizard/blob/master/Images/C4D-Logo.png">
-    <img alt="Code4Delphi" height="100" src="https://github.com/Code4Delphi/Code4D-Wizard/blob/master/Images/c4d-logo-100x100.png">
-  </a>  
-</p>
-Code4D-Wizard is a wizard/plugin designed to be used in the Delphi IDE. It adds to the Delphi IDE several features and functionality to improve development efficiency, speed and productivity. This Wizard was developed using OTA (Open Tools API)
+# Code4D-Wizard-MCP
+
+🤖 **GitHub Copilot-like AI Assistant for Delphi IDE** — Universal edition for all Delphi projects
+
+![Delphi Version](https://img.shields.io/badge/Delphi-12%2B-blue)
+![License](https://img.shields.io/badge/license-MIT-green)
+![Platform](https://img.shields.io/badge/platform-Windows-lightgrey)
+![Framework](https://img.shields.io/badge/framework-VCL%20%7C%20FMX%20%7C%20Console-orange)
+
+Code4D-Wizard is a wizard/plugin designed to be used in the Delphi IDE. It adds to the Delphi IDE several features and functionality to improve development efficiency, speed and productivity — including an embedded AI assistant powered by GitHub Models. This Wizard was developed using OTA (Open Tools API).
+
+---
+
+## ✨ Features
+
+### 🎯 Core Capabilities
+- 🤖 **Embedded MCP Server** — Runs directly in the IDE, no external processes
+- 🔗 **GitHub Models Integration** — Uses your GitHub account (gpt-4o, claude-3.5, o1)
+- ⚡ **Real-time Code Analysis** — Instant feedback while typing (LSP-powered, debounced 500 ms)
+- 🛠️ **10+ Built-in Skills** — Code analysis, refactoring, unit tests, documentation
+- 🧠 **Agentic Mode** — Multi-step task execution with planning and memory
+- 📚 **RAG Knowledge Base** — Auto-indexed Delphi/VCL/FMX docs with semantic search
+- ⌨️ **Keyboard Shortcuts** — `Ctrl+Alt+A` to open assistant, `Ctrl+Shift+A` for quick analysis
+- 🎨 **IDE Integration** — Native menus, Messages window markers, toolbars
+
+### 🔍 Real-time Diagnostics
+| Rule | Code | Default |
+|------|------|---------|
+| Object created without try-finally | `DELPHI001` | warning |
+| String concat in loop (use TStringBuilder) | `DELPHI002` | warning |
+| Direct UI access from TThread.Execute | `DELPHI003` | warning |
+| Deprecated file I/O API | `DELPHI004` | info |
+
+### 🧠 AI Skills
+| Skill | Category | Shortcut |
+|-------|----------|----------|
+| `analyze_code` | Analysis | `Ctrl+Shift+A` |
+| `refactor_code` | Refactoring | — |
+| `generate_unit_test` | Testing | `Ctrl+Alt+T` |
+| `explain_code` | Documentation | — |
+| `find_bugs` | Debugging | — |
+| `suggest_patterns` | Architecture | — |
+| `modernize_syntax` | Refactoring | — |
+| `check_threading` | Concurrency | — |
+| `generate_docs` | Documentation | — |
+| `optimize_code` | Performance | — |
+
+---
 
 ## 📞 Contacts
 
 [![E-mail](https://img.shields.io/badge/E--mail-Send-yellowgreen?logo=maildotru&logoColor=yellowgreen)](mailto:megamrsk@gmail.com)
 
+---
+
 ## ⚙️ Installation
 
-1 - Download Code4D-Wizard. You can download the .zip file or clone the project on your PC.
+### Prerequisites
+- **Delphi 12 Athens** or **Delphi 13 Florence**
+- **GitHub account** with Models API access ([github.com/marketplace/models](https://github.com/marketplace/models))
+- **Windows 10/11**
+- *Optional*: ChromaDB for RAG knowledge base
 
-![image](https://github.com/user-attachments/assets/bb8df3a1-49a1-463c-8445-4c5325398c0e)
+### Steps
+
+1 - Download Code4D-Wizard. You can download the .zip file or clone the project on your PC.
 
 2 - In your Delphi, access the menu File > Open and select the file: Package/C4DWizard.dpk
 
@@ -29,6 +78,17 @@ Code4D-Wizard is a wizard/plugin designed to be used in the Delphi IDE. It adds 
 ![Code4D-item-added-to-MainMenu.png](https://github.com/Code4Delphi/Code4D-Wizard/blob/master/Images/Code4D-item-added-to-MainMenu.png)
 
 <br/>
+
+### GitHub Token Setup
+
+Set the `GITHUB_TOKEN` environment variable so the embedded AI can call GitHub Models:
+
+```cmd
+setx GITHUB_TOKEN "ghp_your_github_token_here"
+rem Restart IDE after setting
+```
+
+Get a token at [github.com/marketplace/models](https://github.com/marketplace/models).
 
 # 👨‍🎓 Complete OTA Training
 [**Access training**](https://hotmart.com/pt-br/marketplace/produtos/delphi-ota-open-tools-api/U81331747Y)
@@ -82,16 +142,28 @@ Code4D-Wizard is a wizard/plugin designed to be used in the Delphi IDE. It adds 
 - **AI Assistant (MCP)**: An embedded AI coding assistant powered by [GitHub Models](https://github.com/marketplace/models). Supports three transport modes:
   - **HTTP** — connect to any running MCP server
   - **Stdio** — launch an external MCP server as a child process
-  - **Embedded (built-in)** — run a fully in-process MCP server with no external dependency. Uses your `GITHUB_TOKEN` (or a Personal Access Token) to call the GitHub Models inference API directly from inside the IDE.
+  - **Embedded (built-in)** — run a fully in-process MCP server with no external dependency. Uses your `GITHUB_TOKEN` to call the GitHub Models inference API directly from inside the IDE.
 
   **Agentic mode** (Embedded transport): enable multi-step task execution where the AI automatically plans, decomposes and executes complex requests using the built-in agent orchestrator (`Src/Agent/`) and a library of Skills (`Src/Skills/`). Domain context is injected via instruction files (`Config/instructions/`).
+
+  **Real-time diagnostics**: as you type, code is analysed (debounced 500 ms) and issues appear in the Messages window: missing try-finally, string concat in loops, direct UI access from threads, deprecated file I/O.
+
+  **RAG knowledge base**: documentation files in `Knowledge/docs/` are auto-indexed by a background `TFileSystemWatcher` (via `ReadDirectoryChangesW`) into ChromaDB. Queries use semantic search over indexed content.
 
   Built-in AI tools available in Embedded mode:
   | Tool | Description |
   |---|---|
-  | `analyze_entity` | Reviews an Aurelius entity class and suggests improvements |
-  | `generate_service` | Generates an XData `ServiceContract` + implementation stub |
-  | `query_docs` | Free-form Delphi / RAD Studio Q&A |
+  | `analyze_code` | Deep code analysis — memory, threading, performance, anti-patterns |
+  | `refactor_code` | Extract method, simplify, modernize syntax |
+  | `generate_unit_test` | DUnit/DUnitX test generation with configurable coverage |
+  | `explain_code` | Natural language explanation with examples |
+  | `find_bugs` | Potential bug and runtime error detection |
+  | `suggest_patterns` | Design pattern recommendations |
+  | `modernize_syntax` | Update code to modern Delphi (inline vars, generics, PPL) |
+  | `check_threading` | Threading safety analysis |
+  | `generate_docs` | XML documentation comments |
+  | `optimize_code` | Performance optimization |
+  | `query_docs` | Free-form Delphi / RAD Studio Q&A with RAG |
   | `ask_ai` | Generic prompt with optional code context |
 
   See **[Docs/AI-ASSISTANT.md](Docs/AI-ASSISTANT.md)** for full setup and usage guide including the Agentic Mode reference.

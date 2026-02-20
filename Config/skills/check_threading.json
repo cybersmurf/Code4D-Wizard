@@ -1,0 +1,57 @@
+{
+  "name": "check_threading",
+  "version": "1.0",
+  "description": "Analyze code for threading safety issues",
+  "category": "concurrency",
+  "agent_mode": "single-tool",
+
+  "instructions": ["base", "delphi-expert"],
+
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "code": {
+        "type": "string",
+        "description": "Code to check for threading issues"
+      },
+      "check_types": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "enum": [
+            "ui_access",
+            "race_condition",
+            "deadlock",
+            "shared_data",
+            "synchronization"
+          ]
+        },
+        "description": "Threading issue categories to check (empty = all)"
+      }
+    },
+    "required": ["code"]
+  },
+
+  "output_schema": {
+    "type": "object",
+    "properties": {
+      "issues": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "type":        { "type": "string" },
+            "severity":    { "type": "string" },
+            "line":        { "type": "integer" },
+            "description": { "type": "string" },
+            "fix":         { "type": "string" }
+          }
+        }
+      },
+      "thread_safe": {
+        "type": "boolean",
+        "description": "True when no threading issues were found"
+      }
+    }
+  }
+}

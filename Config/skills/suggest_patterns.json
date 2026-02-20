@@ -1,0 +1,61 @@
+{
+  "name": "suggest_patterns",
+  "version": "1.0",
+  "description": "Suggest design patterns for Delphi code improvement",
+  "category": "architecture",
+  "agent_mode": "single-tool",
+
+  "instructions": ["base", "delphi-expert"],
+
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "code": {
+        "type": "string",
+        "description": "Code to analyze for pattern opportunities"
+      },
+      "problem_description": {
+        "type": "string",
+        "description": "Optional description of the design problem to solve"
+      },
+      "pattern_categories": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "enum": [
+            "creational",
+            "structural",
+            "behavioral",
+            "concurrency",
+            "delphi_specific"
+          ]
+        },
+        "description": "Pattern categories to consider (empty = all)"
+      }
+    },
+    "required": ["code"]
+  },
+
+  "output_schema": {
+    "type": "object",
+    "properties": {
+      "suggestions": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "pattern_name":  { "type": "string" },
+            "category":      { "type": "string" },
+            "applicability": { "type": "string" },
+            "benefits": {
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            "implementation": { "type": "string" },
+            "example_code":   { "type": "string" }
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,61 @@
+{
+  "name": "generate_docs",
+  "version": "1.0",
+  "description": "Generate XML documentation comments for Delphi code",
+  "category": "documentation",
+  "agent_mode": "single-tool",
+
+  "instructions": ["base", "delphi-expert"],
+
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "code": {
+        "type": "string",
+        "description": "Code to document"
+      },
+      "doc_style": {
+        "type": "string",
+        "enum": ["brief", "detailed", "technical"],
+        "default": "detailed",
+        "description": "Level of comment verbosity"
+      },
+      "include_examples": {
+        "type": "boolean",
+        "default": true,
+        "description": "Include usage examples in remarks"
+      },
+      "include_exceptions": {
+        "type": "boolean",
+        "default": true,
+        "description": "Document possible exceptions raised"
+      }
+    },
+    "required": ["code"]
+  },
+
+  "output_schema": {
+    "type": "object",
+    "properties": {
+      "documented_code": {
+        "type": "string",
+        "description": "Original code with XML doc comments inserted"
+      },
+      "documentation": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "element":     { "type": "string" },
+            "summary":     { "type": "string" },
+            "remarks":     { "type": "string" },
+            "parameters":  { "type": "array" },
+            "returns":     { "type": "string" },
+            "exceptions":  { "type": "array" },
+            "examples":    { "type": "array" }
+          }
+        }
+      }
+    }
+  }
+}

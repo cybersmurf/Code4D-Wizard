@@ -1,0 +1,53 @@
+{
+  "name": "optimize_code",
+  "version": "1.0",
+  "description": "Optimize Delphi code for performance",
+  "category": "performance",
+  "agent_mode": "single-tool",
+
+  "instructions": ["base", "delphi-expert"],
+
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "code": {
+        "type": "string",
+        "description": "Code to optimize"
+      },
+      "optimization_goals": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "enum": ["speed", "memory", "readability", "maintainability"]
+        },
+        "default": ["speed"],
+        "description": "Optimization priorities"
+      },
+      "profile_data": {
+        "type": "object",
+        "description": "Optional profiling data identifying hot spots"
+      }
+    },
+    "required": ["code"]
+  },
+
+  "output_schema": {
+    "type": "object",
+    "properties": {
+      "optimized_code": { "type": "string" },
+      "optimizations": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "type":                 { "type": "string" },
+            "description":          { "type": "string" },
+            "expected_improvement": { "type": "string" },
+            "tradeoffs":            { "type": "string" }
+          }
+        }
+      },
+      "estimated_speedup": { "type": "string" }
+    }
+  }
+}
