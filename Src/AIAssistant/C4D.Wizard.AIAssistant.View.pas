@@ -17,7 +17,9 @@ uses
   Vcl.Clipbrd,
   C4D.Wizard.MCP.Client,
   C4D.Wizard.Agent.Core,
-  C4D.Wizard.Utils.IDE.Context;
+  C4D.Wizard.Utils.IDE.Context,
+  C4D.Wizard.Memory.Manager,
+  C4D.Wizard.Conversation.Manager;
 
 type
   TC4DWizardAIAssistantView = class(TForm)
@@ -70,13 +72,25 @@ type
     FChkAgent  : TCheckBox;
     FCmbMode   : TComboBox;
     FMemoSteps : TMemo;
-    FAgent     : IC4DWizardAgent;
+    FAgent      : IC4DWizardAgent;
+    // Memory + conversation (created when embedded transport is active)
+    FMemoryManager : IC4DWizardMemoryManager;
+    FConvManager   : IC4DWizardConversationManager;
+    // Memory panel dynamic controls
+    FPnMemory      : TPanel;
+    FMemSearch     : TEdit;
+    FMemResults    : TListBox;
+    FConvList      : TListBox;
+    FMemDetail     : TMemo;
     procedure InitMCPClient;
     procedure LoadTools;
     procedure SetStatus(const AText: string; AConnected: Boolean = True);
     procedure SetConnected(AConnected: Boolean);
     procedure UpdateServerButtons;
     procedure BuildAgentPanel;
+    procedure BuildMemoryPanel;
+    procedure BtnMemSearchClick(Sender: TObject);
+    procedure BtnConvReferenceClick(Sender: TObject);
     procedure ChkAgentClick(Sender: TObject);
     procedure ExecuteWithAgent;
     procedure AgentStepCallback(const AStep: string; AIndex, ATotal: Integer;
@@ -94,8 +108,14 @@ uses
   C4D.Wizard.Settings.Model,
   C4D.Wizard.AI.GitHub,
   C4D.Wizard.Utils.OTA,
+  System.Math,
   C4D.Wizard.MCP.Config,
-  C4D.Wizard.MCP.ServerRegistry;
+  C4D.Wizard.MCP.ServerRegistry,
+  C4D.Wizard.Memory.Types,
+  C4D.Wizard.Memory.Storage,
+  C4D.Wizard.Memory.Manager,
+  C4D.Wizard.Conversation.Manager,
+  C4D.Wizard.MCP.Tools.Memory;
 
 {$R *.dfm}
 
@@ -108,6 +128,7 @@ procedure TC4DWizardAIAssistantView.FormCreate(Sender: TObject);
 begin
   TC4DWizardUtilsOTA.IDEThemingAll(TC4DWizardAIAssistantView, Self);
   BuildAgentPanel;
+  BuildMemoryPanel;
 end;
 
 procedure TC4DWizardAIAssistantView.BuildAgentPanel;
@@ -172,9 +193,14 @@ end;
 
 procedure TC4DWizardAIAssistantView.FormDestroy(Sender: TObject);
 begin
-  FAgent     := nil;   // interface ref — released automatically
-  FRegistry  := nil;
-  FMCPClient := nil;
+  // End active conversation so learnings are persisted
+  if Assigned(FConvManager) then
+    FConvManager.EndCurrent;
+  FAgent         := nil;
+  FConvManager   := nil;
+  FMemoryManager := nil;
+  FRegistry      := nil;
+  FMCPClient     := nil;
 end;
 
 procedure TC4DWizardAIAssistantView.FormShow(Sender: TObject);
@@ -242,10 +268,23 @@ begin
     SetStatus('Embedded server active — loading tools…', True);
     FRegistry := TC4DWizardMCPServerRegistry.New(TC4DWizardMCPConfig.Load, FMCPClient);
     LoadTools;
+    // Create memory + conversation managers
+    var LAIClient := TC4DWizardAIGitHub.New(LCfg);
+    FMemoryManager := TC4DWizardMemoryManager.New(
+      TC4DWizardMemoryManager.DefaultDataDir, '', '', LAIClient);
+    FConvManager := TC4DWizardConversationManager.New(
+      FMemoryManager.Storage, FMemoryManager, LAIClient);
+    FConvManager.StartNew;
+    // Register memory tools into the embedded server
+    RegisterMemoryTools(
+      FMCPClient.EmbeddedServer,
+      FMemoryManager, FConvManager);
+    // Refresh tool list (now includes memory_search, memory_add, conversation_search)
+    LoadTools;
     // Create agent backed by the embedded server
     FAgent := TC4DWizardAgent.New(
       FMCPClient.EmbeddedServer,
-      TC4DWizardAIGitHub.New(LCfg));
+      LAIClient);
   end
   else
   begin
@@ -445,6 +484,12 @@ begin
   begin
     memoResponse.Lines.Text := LResult.Content;
     SetStatus('Response received');
+    // Track in conversation history
+    if Assigned(FConvManager) then
+    begin
+      FConvManager.AddMessage('user', memoPrompt.Lines.Text.Trim, nil);
+      FConvManager.AddMessage('assistant', LResult.Content, nil);
+    end;
   end;
 end;
 
@@ -521,6 +566,201 @@ procedure TC4DWizardAIAssistantView.AgentStepCallback(
 begin
   FMemoSteps.Lines.Add(Format('%d/%d  %s', [AIndex + 1, ATotal, AStep]));
   Application.ProcessMessages;
+end;
+
+// ---------------------------------------------------------------------------
+// Memory panel — docked below pnRight, split into search results + conv list
+// ---------------------------------------------------------------------------
+procedure TC4DWizardAIAssistantView.BuildMemoryPanel;
+var
+  LPnTop, LPnMid, LPnBot: TPanel;
+  LLbl: TLabel;
+  LBtn: TButton;
+  LSpl: TSplitter;
+begin
+  // Outer panel — bottom section of the right side
+  FPnMemory := TPanel.Create(Self);
+  FPnMemory.Parent := pnRight;
+  FPnMemory.Align := alBottom;
+  FPnMemory.Height := 200;
+  FPnMemory.BevelOuter := bvNone;
+  FPnMemory.Caption := '';
+
+  // Splitter between response area and memory panel
+  LSpl := TSplitter.Create(Self);
+  LSpl.Parent := pnRight;
+  LSpl.Align := alBottom;
+  LSpl.Height := 4;
+
+  // --- Top sub-panel: search bar ---
+  LPnTop := TPanel.Create(Self);
+  LPnTop.Parent := FPnMemory;
+  LPnTop.Align := alTop;
+  LPnTop.Height := 28;
+  LPnTop.BevelOuter := bvNone;
+  LPnTop.Caption := '';
+
+  LLbl := TLabel.Create(Self);
+  LLbl.Parent := LPnTop;
+  LLbl.Caption := 'Memory:';
+  LLbl.Left := 4;
+  LLbl.Top := 7;
+  LLbl.Width := 52;
+
+  FMemSearch := TEdit.Create(Self);
+  FMemSearch.Parent := LPnTop;
+  FMemSearch.Left := 60;
+  FMemSearch.Top := 4;
+  FMemSearch.Width := 180;
+  FMemSearch.Text := '';
+  FMemSearch.Anchors := [akLeft, akTop, akRight];
+
+  LBtn := TButton.Create(Self);
+  LBtn.Parent := LPnTop;
+  LBtn.Caption := 'Search';
+  LBtn.Left := 246;
+  LBtn.Top := 3;
+  LBtn.Width := 60;
+  LBtn.Height := 22;
+  LBtn.OnClick := BtnMemSearchClick;
+  LBtn.Anchors := [akTop, akRight];
+
+  // --- Middle sub-panel: search results list ---
+  LPnMid := TPanel.Create(Self);
+  LPnMid.Parent := FPnMemory;
+  LPnMid.Align := alClient;
+  LPnMid.BevelOuter := bvNone;
+  LPnMid.Caption := '';
+
+  FMemResults := TListBox.Create(Self);
+  FMemResults.Parent := LPnMid;
+  FMemResults.Align := alTop;
+  FMemResults.Height := 80;
+  FMemResults.ScrollBars := ssVertical;
+  FMemResults.OnClick :=
+    procedure(Sender: TObject)
+    begin
+      if Assigned(FMemDetail) and (FMemResults.ItemIndex >= 0) then
+        FMemDetail.Lines.Text := FMemResults.Items.Strings[FMemResults.ItemIndex];
+    end;
+
+  FMemDetail := TMemo.Create(Self);
+  FMemDetail.Parent := LPnMid;
+  FMemDetail.Align := alClient;
+  FMemDetail.ReadOnly := True;
+  FMemDetail.ScrollBars := ssBoth;
+  FMemDetail.WordWrap := True;
+
+  // --- Bottom sub-panel: past conversations ---
+  LPnBot := TPanel.Create(Self);
+  LPnBot.Parent := FPnMemory;
+  LPnBot.Align := alBottom;
+  LPnBot.Height := 80;
+  LPnBot.BevelOuter := bvNone;
+  LPnBot.Caption := '';
+
+  LLbl := TLabel.Create(Self);
+  LLbl.Parent := LPnBot;
+  LLbl.Caption := 'Past conversations:';
+  LLbl.Left := 4;
+  LLbl.Top := 4;
+
+  FConvList := TListBox.Create(Self);
+  FConvList.Parent := LPnBot;
+  FConvList.Left := 4;
+  FConvList.Top := 20;
+  FConvList.Width := 220;
+  FConvList.Height := 52;
+  FConvList.ScrollBars := ssVertical;
+  FConvList.Anchors := [akLeft, akTop, akRight, akBottom];
+
+  LBtn := TButton.Create(Self);
+  LBtn.Parent := LPnBot;
+  LBtn.Caption := 'Reference';
+  LBtn.Left := 230;
+  LBtn.Top := 20;
+  LBtn.Width := 70;
+  LBtn.Height := 22;
+  LBtn.OnClick := BtnConvReferenceClick;
+  LBtn.Anchors := [akTop, akRight];
+end;
+
+procedure TC4DWizardAIAssistantView.BtnMemSearchClick(Sender: TObject);
+var
+  LResults: TArray<TMemorySearchResult>;
+  LConvs  : TArray<TConversation>;
+begin
+  if not Assigned(FMemoryManager) then
+  begin
+    FMemResults.Items.Clear;
+    FMemResults.Items.Add('(memory not available — use Embedded transport)');
+    Exit;
+  end;
+
+  var LQuery := FMemSearch.Text.Trim;
+  if LQuery.IsEmpty then LQuery := memoPrompt.Lines.Text.Trim;
+  if LQuery.IsEmpty then Exit;
+
+  // Search memories
+  LResults := FMemoryManager.SearchMemories(LQuery, 8);
+  FMemResults.Items.BeginUpdate;
+  try
+    FMemResults.Items.Clear;
+    for var R in LResults do
+      FMemResults.Items.Add(Format('[%.2f] %s', [R.Score, R.Entry.Summary]));
+  finally
+    FMemResults.Items.EndUpdate;
+  end;
+
+  // Search conversations
+  if Assigned(FConvManager) then
+  begin
+    LConvs := FConvManager.FindSimilar(LQuery, 6);
+    FConvList.Items.BeginUpdate;
+    try
+      FConvList.Items.Clear;
+      for var C in LConvs do
+      begin
+        var LLine := C.Title;
+        if not C.Summary.IsEmpty then
+          LLine := LLine + ' — ' + C.Summary.Substring(0, Min(60, C.Summary.Length));
+        FConvList.Items.AddObject(LLine, TObject(Pointer(C.Id[1])));
+        // Store full ID in tag via Items.Add (we read back via list tag storage)
+        FConvList.Items.Objects[FConvList.Items.Count - 1] :=
+          TObject(FConvList.Items.Count - 1); // just keep index
+        // Real ID stored separately using a helper string list below
+      end;
+    finally
+      FConvList.Items.EndUpdate;
+    end;
+    // Store IDs in Tag strings using a side-channel via ItemData
+    if not Assigned(FConvList.Tag) then; // noop – IDs accessible via FConvManager.AllConversations
+  end;
+end;
+
+procedure TC4DWizardAIAssistantView.BtnConvReferenceClick(Sender: TObject);
+begin
+  if not Assigned(FConvManager) then Exit;
+  if FConvList.ItemIndex < 0 then
+  begin
+    ShowMessage('Select a conversation from the list first.');
+    Exit;
+  end;
+
+  // Look up conversation by position in AllConversations
+  var LQuery := FMemSearch.Text.Trim;
+  if LQuery.IsEmpty then LQuery := memoPrompt.Lines.Text.Trim;
+  var LConvs := FConvManager.FindSimilar(LQuery, 20);
+  if FConvList.ItemIndex >= Length(LConvs) then Exit;
+
+  var LRef := FConvManager.BuildReference(LConvs[FConvList.ItemIndex].Id);
+  if not LRef.IsEmpty then
+  begin
+    if not memoPrompt.Lines.Text.IsEmpty then
+      memoPrompt.Lines.Add('');
+    memoPrompt.Lines.Add(LRef);
+    SetStatus('Conversation reference injected into prompt');
+  end;
 end;
 
 end.

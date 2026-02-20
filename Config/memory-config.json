@@ -1,0 +1,53 @@
+{
+  "storage": {
+    "data_dir": "${APPDATA}/Code4D/Memory",
+    "auto_save": true,
+    "max_memories": 10000
+  },
+
+  "learning": {
+    "enabled": true,
+    "extract_on_conversation_end": true,
+    "importance_threshold": "medium",
+    "auto_tag": true
+  },
+
+  "memory_types": {
+    "conversation": { "enabled": true, "retention_days": 90 },
+    "code_snippet":  { "enabled": true, "retention_days": 365 },
+    "preference":    { "enabled": true, "retention_days": -1 },
+    "decision":      { "enabled": true, "retention_days": 180 },
+    "context":       { "enabled": true, "retention_days": 180 },
+    "learning":      { "enabled": true, "retention_days": -1 }
+  },
+
+  "embeddings": {
+    "enabled": true,
+    "ollama_host": "${OLLAMA_HOST}",
+    "model": "mxbai-embed-large:latest",
+    "fallback_text_only": true,
+    "semantic_threshold": 0.70
+  },
+
+  "search": {
+    "default_limit": 5,
+    "include_related": true,
+    "boost_recent": true,
+    "boost_frequent": true,
+    "vector_weight": 0.6,
+    "text_weight": 0.4
+  },
+
+  "conversations": {
+    "auto_title": true,
+    "auto_summarize": true,
+    "export_format": "json",
+    "max_messages_per_conversation": 200
+  },
+
+  "privacy": {
+    "anonymize_paths": false,
+    "exclude_patterns": ["**/secrets/**", "**/*.key", "**/*.pem"],
+    "cloud_sync": false
+  }
+}
