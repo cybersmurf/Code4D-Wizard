@@ -1,0 +1,136 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Build with MSBuild (Delphi 13)",
+      "type": "shell",
+      "command": "${workspaceFolder}/Build/msbuild-build.bat",
+      "args": ["13", "Release"],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "problemMatcher": {
+        "owner": "delphi",
+        "fileLocation": ["relative", "${workspaceFolder}"],
+        "pattern": {
+          "regexp": "^(.*)\\((\\d+)\\):\\s+(Error|Warning|Fatal):\\s+(.*)$",
+          "file": 1,
+          "line": 2,
+          "severity": 3,
+          "message": 4
+        }
+      }
+    },
+    {
+      "label": "Build with DCC (Delphi 13)",
+      "type": "shell",
+      "command": "${workspaceFolder}/Build/dcc-build.bat",
+      "args": ["13", "Release"],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "problemMatcher": {
+        "owner": "delphi",
+        "fileLocation": ["relative", "${workspaceFolder}"],
+        "pattern": {
+          "regexp": "^(.*)\\((\\d+)\\):\\s+(Error|Warning|Fatal):\\s+(.*)$",
+          "file": 1,
+          "line": 2,
+          "severity": 3,
+          "message": 4
+        }
+      }
+    },
+    {
+      "label": "Build with MSBuild (Delphi 12)",
+      "type": "shell",
+      "command": "${workspaceFolder}/Build/msbuild-build.bat",
+      "args": ["12", "Release"],
+      "group": "build",
+      "problemMatcher": {
+        "owner": "delphi",
+        "fileLocation": ["relative", "${workspaceFolder}"],
+        "pattern": {
+          "regexp": "^(.*)\\((\\d+)\\):\\s+(Error|Warning|Fatal):\\s+(.*)$",
+          "file": 1,
+          "line": 2,
+          "severity": 3,
+          "message": 4
+        }
+      }
+    },
+    {
+      "label": "Build with DCC (Delphi 12)",
+      "type": "shell",
+      "command": "${workspaceFolder}/Build/dcc-build.bat",
+      "args": ["12", "Release"],
+      "group": "build",
+      "problemMatcher": {
+        "owner": "delphi",
+        "fileLocation": ["relative", "${workspaceFolder}"],
+        "pattern": {
+          "regexp": "^(.*)\\((\\d+)\\):\\s+(Error|Warning|Fatal):\\s+(.*)$",
+          "file": 1,
+          "line": 2,
+          "severity": 3,
+          "message": 4
+        }
+      }
+    },
+    {
+      "label": "Clean Build Output",
+      "type": "shell",
+      "command": "powershell",
+      "args": [
+        "-ExecutionPolicy",
+        "Bypass",
+        "-File",
+        "${workspaceFolder}/Build/clean.ps1"
+      ],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      }
+    },
+    {
+      "label": "Install Package in IDE (Delphi 13)",
+      "type": "shell",
+      "command": "${workspaceFolder}/Build/install.bat",
+      "args": ["13"],
+      "dependsOn": ["Build with MSBuild (Delphi 13)"],
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      }
+    },
+    {
+      "label": "Build All Delphi Versions",
+      "dependsOn": [
+        "Build with MSBuild (Delphi 12)",
+        "Build with MSBuild (Delphi 13)"
+      ],
+      "dependsOrder": "sequence",
+      "group": "build",
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      }
+    }
+  ]
+}

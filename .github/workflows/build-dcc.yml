@@ -1,0 +1,80 @@
+name: Build (DCC)
+
+on:
+  workflow_dispatch:
+    inputs:
+      delphi-version:
+        description: 'Delphi version'
+        required: true
+        default: '13'
+        type: choice
+        options:
+          - '12'
+          - '13'
+      config:
+        description: 'Build configuration'
+        required: true
+        default: 'Release'
+        type: choice
+        options:
+          - 'Release'
+          - 'Debug'
+
+jobs:
+  build-dcc:
+    name: DCC64 – Delphi ${{ github.event.inputs.delphi-version }} / ${{ github.event.inputs.config }}
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # ---------------------------------------------------------------
+      # See note in build-msbuild.yml regarding Delphi installation.
+      # ---------------------------------------------------------------
+      - name: Setup Delphi environment
+        shell: pwsh
+        run: |
+          $Root = if ('${{ github.event.inputs.delphi-version }}' -eq '12') {
+            'C:\Program Files (x86)\Embarcadero\Studio\23.0'
+          } else {
+            'C:\Program Files (x86)\Embarcadero\Studio\24.0'
+          }
+          if (-not (Test-Path $Root)) {
+            Write-Warning "Delphi not found at $Root"
+            echo "DELPHI_AVAILABLE=false" >> $env:GITHUB_ENV
+            exit 0
+          }
+          echo "DELPHI_ROOT=$Root"       >> $env:GITHUB_ENV
+          echo "DELPHI_AVAILABLE=true"   >> $env:GITHUB_ENV
+          echo "$Root\bin"              >> $env:GITHUB_PATH
+
+      - name: Build with DCC64
+        if: env.DELPHI_AVAILABLE == 'true'
+        shell: cmd
+        run: >
+          Build\dcc-build.bat
+          ${{ github.event.inputs.delphi-version }}
+          ${{ github.event.inputs.config }}
+
+      - name: Upload BPL
+        if: env.DELPHI_AVAILABLE == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: C4DWizard-DCC-D${{ github.event.inputs.delphi-version }}-${{ github.event.inputs.config }}
+          path: Package/Win64/${{ github.event.inputs.config }}/C4DWizard.bpl
+          retention-days: 30
+
+      - name: Build summary
+        if: always()
+        shell: pwsh
+        run: |
+          @"
+          ## DCC Build Summary
+          | Property | Value |
+          |---|---|
+          | Delphi | ${{ github.event.inputs.delphi-version }} |
+          | Config | ${{ github.event.inputs.config }} |
+          | Compiler | DCC64 |
+          | Commit | ${{ github.sha }} |
+          "@ >> $env:GITHUB_STEP_SUMMARY

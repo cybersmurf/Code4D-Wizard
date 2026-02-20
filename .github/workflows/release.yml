@@ -1,0 +1,153 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Build & Publish Release
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Extract version from tag
+        id: ver
+        shell: pwsh
+        run: |
+          $Tag     = '${{ github.ref_name }}'
+          $Version = $Tag -replace '^v', ''
+          echo "TAG=$Tag"         >> $env:GITHUB_OUTPUT
+          echo "VERSION=$Version" >> $env:GITHUB_OUTPUT
+          Write-Host "Tag: $Tag  |  Version: $Version"
+
+      # ---------------------------------------------------------------
+      # Set up Delphi environment(s) – adjust if using a self-hosted
+      # runner that has Delphi pre-installed.
+      # ---------------------------------------------------------------
+      - name: Setup Delphi 12 environment
+        shell: pwsh
+        run: |
+          $Root = 'C:\Program Files (x86)\Embarcadero\Studio\23.0'
+          $Available = Test-Path $Root
+          echo "DELPHI12_ROOT=$Root"             >> $env:GITHUB_ENV
+          echo "DELPHI12_AVAILABLE=$Available"   >> $env:GITHUB_ENV
+
+      - name: Setup Delphi 13 environment
+        shell: pwsh
+        run: |
+          $Root = 'C:\Program Files (x86)\Embarcadero\Studio\24.0'
+          $Available = Test-Path $Root
+          echo "DELPHI13_ROOT=$Root"             >> $env:GITHUB_ENV
+          echo "DELPHI13_AVAILABLE=$Available"   >> $env:GITHUB_ENV
+
+      - name: Build – Delphi 12 Release
+        if: env.DELPHI12_AVAILABLE == 'True'
+        shell: cmd
+        run: Build\msbuild-build.bat 12 Release
+
+      - name: Build – Delphi 13 Release
+        if: env.DELPHI13_AVAILABLE == 'True'
+        shell: cmd
+        run: Build\msbuild-build.bat 13 Release
+
+      # Fall back: if neither Delphi is installed, pack the pre-built
+      # BPLs that live in Install-BPLs/ (already present in the repo).
+      - name: Package pre-built BPLs (fallback)
+        shell: pwsh
+        run: |
+          $Version = '${{ steps.ver.outputs.VERSION }}'
+          $Delphi  = @{
+            'D12-Athens'     = 'Install-BPLs/Delphi-12.0-Athens/C4DWizard.bpl'
+            'D13-Florence'   = 'Install-BPLs/Delphi-13.0-Florence/C4DWizard.bpl'
+          }
+          # MSBuild outputs
+          $Built12 = 'Package/Win64/Release/C4DWizard.bpl'
+          $Built13 = 'Package/Win64/Release/C4DWizard.bpl'
+
+          $Zips = @()
+
+          foreach ($Label in $Delphi.Keys) {
+            $Bpl = if (-not (Test-Path $Built12) -and -not (Test-Path $Built13)) {
+              $Delphi[$Label]
+            } elseif ($Label -match 'D12') { $Built12 } else { $Built13 }
+
+            if (Test-Path $Bpl) {
+              $ZipName = "C4DWizard-v${Version}-${Label}.zip"
+              Compress-Archive -Path $Bpl -DestinationPath $ZipName -Force
+              $Zips += $ZipName
+              Write-Host "Packed: $ZipName"
+            } else {
+              Write-Warning "BPL not found, skipping: $Bpl"
+            }
+          }
+
+          # Write list for the release step
+          $Zips -join "`n" | Out-File zips.txt
+          echo "ZIPS=$(($Zips -join ','))" >> $env:GITHUB_ENV
+
+      - name: Generate release notes
+        shell: pwsh
+        run: |
+          $Version = '${{ steps.ver.outputs.VERSION }}'
+          $Repo    = '${{ github.repository }}'
+          @"
+          ## Code4D Wizard v$Version
+
+          ### Downloads
+          | File | Delphi |
+          |---|---|
+          | `C4DWizard-v${Version}-D12-Athens.zip`   | 12.0 Athens   |
+          | `C4DWizard-v${Version}-D13-Florence.zip` | 13.0 Florence |
+
+          ### Installation
+          1. Extract the ZIP
+          2. Copy `C4DWizard.bpl` to your Delphi `bin` folder
+          3. Open **Components > Install Packages** and add the BPL
+          4. Restart the IDE
+
+          ### Features
+          - Embedded MCP Server (GitHub Models in-process)
+          - GitHub Models API integration (`gpt-4o`, `gpt-4o-mini`, …)
+          - Built-in tools: `analyze_entity`, `generate_service`, `query_docs`, `ask_ai`
+          - HTTP + Stdio + Embedded transport options
+          - AI Assistant dialog with tool browser
+
+          ### Documentation
+          See [README](https://github.com/$Repo/blob/main/README.md) for full setup instructions.
+          "@ | Out-File release-notes.md -Encoding utf8
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.ver.outputs.TAG }}
+          name:     Code4D Wizard ${{ steps.ver.outputs.TAG }}
+          body_path: release-notes.md
+          draft: false
+          prerelease: ${{ contains(steps.ver.outputs.TAG, '-') }}
+          files: |
+            C4DWizard-v${{ steps.ver.outputs.VERSION }}-D12-Athens.zip
+            C4DWizard-v${{ steps.ver.outputs.VERSION }}-D13-Florence.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Release summary
+        if: always()
+        shell: pwsh
+        run: |
+          @"
+          ## Release Summary
+          | Field | Value |
+          |---|---|
+          | Tag | ${{ steps.ver.outputs.TAG }} |
+          | Version | ${{ steps.ver.outputs.VERSION }} |
+          | Commit | ${{ github.sha }} |
+          "@ >> $env:GITHUB_STEP_SUMMARY

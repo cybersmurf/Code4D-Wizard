@@ -1,0 +1,89 @@
+name: Build (MSBuild)
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths:
+      - 'Src/**'
+      - 'Package/**'
+      - 'Build/**'
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    name: Delphi ${{ matrix.delphi-version }} / ${{ matrix.config }}
+    runs-on: windows-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        delphi-version: ['12', '13']
+        config: ['Release']
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Cache DCU output
+        uses: actions/cache@v4
+        with:
+          path: Package/Win64/${{ matrix.config }}/DCU
+          key: dcu-${{ matrix.delphi-version }}-${{ matrix.config }}-${{ hashFiles('Src/**/*.pas', 'Package/**/*.dpk') }}
+          restore-keys: |
+            dcu-${{ matrix.delphi-version }}-${{ matrix.config }}-
+
+      # ---------------------------------------------------------------
+      # NOTE: GitHub-hosted Windows runners do NOT include Delphi.
+      # Replace the step below with your preferred Delphi install action
+      # (e.g. a self-hosted runner, or a third-party action like
+      # github.com/marketplace/actions/install-delphi).
+      # ---------------------------------------------------------------
+      - name: Setup Delphi environment
+        shell: pwsh
+        run: |
+          $Root = if ('${{ matrix.delphi-version }}' -eq '12') {
+            'C:\Program Files (x86)\Embarcadero\Studio\23.0'
+          } else {
+            'C:\Program Files (x86)\Embarcadero\Studio\24.0'
+          }
+          if (-not (Test-Path $Root)) {
+            Write-Warning "Delphi not found at $Root – skipping (no Delphi on public runner)"
+            echo "DELPHI_AVAILABLE=false" >> $env:GITHUB_ENV
+            exit 0
+          }
+          echo "DELPHI_ROOT=$Root"        >> $env:GITHUB_ENV
+          echo "DELPHI_AVAILABLE=true"    >> $env:GITHUB_ENV
+          echo "$Root\bin"               >> $env:GITHUB_PATH
+
+      - name: Build with MSBuild
+        if: env.DELPHI_AVAILABLE == 'true'
+        shell: cmd
+        run: Build\msbuild-build.bat ${{ matrix.delphi-version }} ${{ matrix.config }}
+
+      - name: Upload BPL
+        if: env.DELPHI_AVAILABLE == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: C4DWizard-D${{ matrix.delphi-version }}-${{ matrix.config }}
+          path: Package/Win64/${{ matrix.config }}/C4DWizard.bpl
+          retention-days: 30
+
+      - name: Build summary
+        if: always()
+        shell: pwsh
+        run: |
+          $Status = if ($env:DELPHI_AVAILABLE -eq 'true') {
+            if ($LASTEXITCODE -eq 0) { 'Success' } else { 'Failed' }
+          } else { 'Skipped (Delphi not installed)' }
+
+          @"
+          ## Build Summary
+          | Property | Value |
+          |---|---|
+          | Delphi | ${{ matrix.delphi-version }} |
+          | Config | ${{ matrix.config }} |
+          | Compiler | MSBuild |
+          | Status | $Status |
+          | Commit | ${{ github.sha }} |
+          "@ >> $env:GITHUB_STEP_SUMMARY

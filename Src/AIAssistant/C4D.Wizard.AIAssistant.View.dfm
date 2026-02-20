@@ -1,0 +1,417 @@
+object C4DWizardAIAssistantView: TC4DWizardAIAssistantView
+  Left = 0
+  Top = 0
+  BorderIcons = [biSystemMenu, biMaximize]
+  Caption = 'Code4D - AI Assistant (MCP)'
+  ClientHeight = 620
+  ClientWidth = 860
+  Color = clBtnFace
+  Font.Charset = DEFAULT_CHARSET
+  Font.Color = clWindowText
+  Font.Height = -11
+  Font.Name = 'Tahoma'
+  Font.Style = []
+  KeyPreview = True
+  OldCreateOrder = False
+  Position = poScreenCenter
+  OnCreate = FormCreate
+  OnDestroy = FormDestroy
+  OnKeyDown = FormKeyDown
+  OnShow = FormShow
+  PixelsPerInch = 96
+  TextHeight = 13
+  object pnMain: TPanel
+    Left = 0
+    Top = 0
+    Width = 860
+    Height = 620
+    Align = alClient
+    BevelOuter = bvNone
+    Color = clWindow
+    ParentBackground = False
+    TabOrder = 0
+    object Splitter1: TSplitter
+      Left = 200
+      Top = 0
+      Width = 4
+      Height = 578
+      Cursor = crHSplit
+      Align = alLeft
+      ResizeStyle = rsUpdate
+    end
+    object pnLeft: TPanel
+      Left = 0
+      Top = 0
+      Width = 200
+      Height = 578
+      Align = alLeft
+      BevelOuter = bvNone
+      Color = clWindow
+      ParentBackground = False
+      TabOrder = 0
+      object pnLeftTop: TPanel
+        Left = 0
+        Top = 0
+        Width = 200
+        Height = 30
+        Align = alTop
+        BevelOuter = bvNone
+        Color = clWindow
+        ParentBackground = False
+        TabOrder = 0
+        object lblTools: TLabel
+          AlignWithMargins = True
+          Left = 8
+          Top = 8
+          Width = 184
+          Height = 14
+          Margins.Left = 8
+          Margins.Top = 8
+          Margins.Right = 8
+          Margins.Bottom = 0
+          Align = alClient
+          Caption = 'Available Tools:'
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -11
+          Font.Name = 'Tahoma'
+          Font.Style = [fsBold]
+          ParentFont = False
+          ExplicitWidth = 88
+        end
+      end
+      object lbTools: TListBox
+        Left = 0
+        Top = 30
+        Width = 200
+        Height = 458
+        Align = alClient
+        BorderStyle = bsNone
+        Color = clWindow
+        ItemHeight = 18
+        TabOrder = 1
+        OnClick = lbToolsClick
+      end
+      object pnLeftBottom: TPanel
+        Left = 0
+        Top = 488
+        Width = 200
+        Height = 90
+        Align = alBottom
+        BevelOuter = bvNone
+        Color = clWindow
+        ParentBackground = False
+        TabOrder = 2
+        object lblStatus: TLabel
+          AlignWithMargins = True
+          Left = 8
+          Top = 8
+          Width = 184
+          Height = 74
+          Margins.Left = 8
+          Margins.Top = 8
+          Margins.Right = 8
+          Margins.Bottom = 8
+          Align = alClient
+          Caption = 'Status: Disconnected'
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clGrayText
+          Font.Height = -11
+          Font.Name = 'Tahoma'
+          Font.Style = []
+          ParentFont = False
+          WordWrap = True
+          ExplicitWidth = 108
+          ExplicitHeight = 13
+        end
+      end
+    end
+    object pnRight: TPanel
+      Left = 204
+      Top = 0
+      Width = 656
+      Height = 578
+      Align = alClient
+      BevelOuter = bvNone
+      Color = clWindow
+      ParentBackground = False
+      TabOrder = 1
+      object Splitter2: TSplitter
+        Left = 0
+        Top = 240
+        Width = 656
+        Height = 4
+        Cursor = crVSplit
+        Align = alTop
+        ResizeStyle = rsUpdate
+      end
+      object pnPrompt: TPanel
+        Left = 0
+        Top = 0
+        Width = 656
+        Height = 240
+        Align = alTop
+        BevelOuter = bvNone
+        Color = clWindow
+        ParentBackground = False
+        TabOrder = 0
+        object pnPromptHeader: TPanel
+          Left = 0
+          Top = 0
+          Width = 656
+          Height = 26
+          Align = alTop
+          BevelOuter = bvNone
+          Color = clWindow
+          ParentBackground = False
+          TabOrder = 0
+          object lblPrompt: TLabel
+            AlignWithMargins = True
+            Left = 8
+            Top = 6
+            Width = 560
+            Height = 14
+            Margins.Left = 8
+            Margins.Top = 6
+            Margins.Right = 0
+            Margins.Bottom = 6
+            Align = alClient
+            Caption = 'Prompt / Instruction:'
+            Font.Charset = DEFAULT_CHARSET
+            Font.Color = clWindowText
+            Font.Height = -11
+            Font.Name = 'Tahoma'
+            Font.Style = [fsBold]
+            ParentFont = False
+            ExplicitWidth = 120
+          end
+          object btnGetContext: TButton
+            AlignWithMargins = True
+            Left = 568
+            Top = 2
+            Width = 82
+            Height = 22
+            Margins.Left = 0
+            Margins.Top = 2
+            Margins.Right = 6
+            Margins.Bottom = 2
+            Align = alRight
+            Caption = 'Get IDE Code'
+            Hint = 'Paste selected code from the IDE editor into the prompt'
+            ParentShowHint = False
+            ShowHint = True
+            TabOrder = 0
+            OnClick = btnGetContextClick
+          end
+        end
+        object memoPrompt: TMemo
+          Left = 0
+          Top = 26
+          Width = 656
+          Height = 214
+          Align = alClient
+          BorderStyle = bsNone
+          Color = clWindow
+          ScrollBars = ssVertical
+          TabOrder = 1
+          WordWrap = True
+        end
+      end
+      object pnResponse: TPanel
+        Left = 0
+        Top = 244
+        Width = 656
+        Height = 334
+        Align = alClient
+        BevelOuter = bvNone
+        Color = clWindow
+        ParentBackground = False
+        TabOrder = 1
+        object pnResponseHeader: TPanel
+          Left = 0
+          Top = 0
+          Width = 656
+          Height = 26
+          Align = alTop
+          BevelOuter = bvNone
+          Color = clWindow
+          ParentBackground = False
+          TabOrder = 0
+          object lblResponse: TLabel
+            AlignWithMargins = True
+            Left = 8
+            Top = 6
+            Width = 560
+            Height = 14
+            Margins.Left = 8
+            Margins.Top = 6
+            Margins.Right = 0
+            Margins.Bottom = 6
+            Align = alClient
+            Caption = 'Response:'
+            Font.Charset = DEFAULT_CHARSET
+            Font.Color = clWindowText
+            Font.Height = -11
+            Font.Name = 'Tahoma'
+            Font.Style = [fsBold]
+            ParentFont = False
+            ExplicitWidth = 61
+          end
+          object btnCopyResponse: TButton
+            AlignWithMargins = True
+            Left = 568
+            Top = 2
+            Width = 82
+            Height = 22
+            Margins.Left = 0
+            Margins.Top = 2
+            Margins.Right = 6
+            Margins.Bottom = 2
+            Align = alRight
+            Caption = 'Copy'
+            TabOrder = 0
+            OnClick = btnCopyResponseClick
+          end
+        end
+        object memoResponse: TMemo
+          Left = 0
+          Top = 26
+          Width = 656
+          Height = 308
+          Align = alClient
+          BorderStyle = bsNone
+          Color = clWindow
+          ReadOnly = True
+          ScrollBars = ssVertical
+          TabOrder = 1
+          WordWrap = True
+        end
+      end
+    end
+    object pnBottom: TPanel
+      Left = 0
+      Top = 578
+      Width = 860
+      Height = 42
+      Align = alBottom
+      BevelOuter = bvNone
+      Color = clWindow
+      ParentBackground = False
+      TabOrder = 2
+      object Bevel1: TBevel
+        Left = 0
+        Top = 0
+        Width = 860
+        Height = 1
+        Align = alTop
+        Shape = bsTopLine
+        ExplicitWidth = 686
+      end
+      object btnSend: TButton
+        AlignWithMargins = True
+        Left = 668
+        Top = 7
+        Width = 90
+        Height = 28
+        Margins.Left = 0
+        Margins.Top = 7
+        Margins.Right = 8
+        Margins.Bottom = 7
+        Align = alRight
+        Caption = 'Send (F5)'
+        Default = True
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -11
+        Font.Name = 'Tahoma'
+        Font.Style = [fsBold]
+        ParentFont = False
+        TabOrder = 0
+        OnClick = btnSendClick
+      end
+      object btnClear: TButton
+        AlignWithMargins = True
+        Left = 762
+        Top = 7
+        Width = 90
+        Height = 28
+        Margins.Left = 0
+        Margins.Top = 7
+        Margins.Right = 8
+        Margins.Bottom = 7
+        Align = alRight
+        Caption = 'Clear'
+        TabOrder = 1
+        OnClick = btnClearClick
+      end
+      object btnReconnect: TButton
+        AlignWithMargins = True
+        Left = 8
+        Top = 7
+        Width = 100
+        Height = 28
+        Margins.Left = 8
+        Margins.Top = 7
+        Margins.Right = 0
+        Margins.Bottom = 7
+        Align = alLeft
+        Caption = 'Reconnect'
+        TabOrder = 2
+        OnClick = btnReconnectClick
+      end
+      object btnStartServer: TButton
+        AlignWithMargins = True
+        Left = 112
+        Top = 7
+        Width = 100
+        Height = 28
+        Margins.Left = 8
+        Margins.Top = 7
+        Margins.Right = 0
+        Margins.Bottom = 7
+        Align = alLeft
+        Caption = 'Start Server'
+        TabOrder = 3
+        Visible = False
+        OnClick = btnStartServerClick
+      end
+      object btnStopServer: TButton
+        AlignWithMargins = True
+        Left = 216
+        Top = 7
+        Width = 100
+        Height = 28
+        Margins.Left = 8
+        Margins.Top = 7
+        Margins.Right = 0
+        Margins.Bottom = 7
+        Align = alLeft
+        Caption = 'Stop Server'
+        Enabled = False
+        TabOrder = 4
+        Visible = False
+        OnClick = btnStopServerClick
+      end
+      object lblServerURL: TLabel
+        AlignWithMargins = True
+        Left = 116
+        Top = 13
+        Width = 544
+        Height = 13
+        Margins.Left = 8
+        Margins.Top = 13
+        Margins.Right = 8
+        Margins.Bottom = 13
+        Align = alClient
+        Caption = 'Server: http://localhost:8080/mcp'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clGrayText
+        Font.Height = -11
+        Font.Name = 'Tahoma'
+        Font.Style = []
+        ParentFont = False
+        ExplicitWidth = 206
+      end
+    end
+  end
+end

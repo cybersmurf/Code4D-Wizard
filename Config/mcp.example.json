@@ -1,0 +1,52 @@
+{
+  "$schema": "https://modelcontextprotocol.io/schema/mcp.json",
+  "version": "1.0",
+
+  "githubModels": {
+    "enabled": true,
+
+    "model": "gpt-4o",
+    "endpoint": "https://models.inference.ai.azure.com",
+
+    "token": "${env:GITHUB_TOKEN}",
+
+    "maxTokens": 2000,
+    "temperature": 0.3,
+    "streaming": false,
+
+    "fallbackModels": [
+      "claude-3.5-sonnet",
+      "o1-preview"
+    ]
+  },
+
+  "mcpServers": {
+    "embedded": {
+      "command": "embedded",
+      "description": "Built-in tools (no external process)",
+      "tools": [
+        "analyze_entity",
+        "generate_service",
+        "query_docs",
+        "ask_ai"
+      ]
+    },
+
+    "my_stdio_server": {
+      "command": "node",
+      "args": ["C:\\MyMCPServer\\index.js"],
+      "workingDir": "C:\\MyMCPServer",
+      "env": {
+        "MY_VAR": "value"
+      }
+    },
+
+    "my_http_server": {
+      "url": "http://localhost:8080/mcp"
+    }
+  },
+
+  "shortcuts": {
+    "aiAssistant": "Ctrl+Alt+A"
+  }
+}

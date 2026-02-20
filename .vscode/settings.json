@@ -1,0 +1,35 @@
+{
+  "files.associations": {
+    "*.pas": "pascal",
+    "*.dpr": "pascal",
+    "*.dpk": "pascal",
+    "*.dproj": "xml",
+    "*.dfm": "pascal"
+  },
+  "files.exclude": {
+    "**/__history": true,
+    "**/__recovery": true,
+    "**/Win32": true,
+    "**/Win64": true,
+    "**/*.dcu": true,
+    "**/*.exe": true,
+    "**/*.dll": true,
+    "**/*.bpl": true,
+    "**/*.dcp": true
+  },
+  "search.exclude": {
+    "**/__history": true,
+    "**/__recovery": true,
+    "**/Win32": true,
+    "**/Win64": true,
+    "**/*.dcu": true
+  },
+  "editor.formatOnSave": false,
+  "editor.tabSize": 2,
+  "files.encoding": "utf8",
+  "terminal.integrated.defaultProfile.windows": "PowerShell",
+  "delphi.compilerPath": "C:/Program Files (x86)/Embarcadero/Studio/24.0/bin/dcc64.exe",
+  "delphi.namespaceRoot": "${workspaceFolder}/Src",
+  "pascal.enableCodeLens": true,
+  "pascal.enableHover": true
+}
