@@ -1,0 +1,53 @@
+{
+  "name": "generate_unit_test",
+  "version": "1.0",
+  "description": "Generate DUnit or DUnitX unit tests for Delphi code",
+  "category": "testing",
+  "agent_mode": "single-tool",
+
+  "instructions": ["base", "delphi-expert"],
+
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "source_code": {
+        "type": "string",
+        "description": "Source code to generate tests for"
+      },
+      "test_framework": {
+        "type": "string",
+        "enum": ["DUnit", "DUnitX"],
+        "default": "DUnitX",
+        "description": "Testing framework to use"
+      },
+      "coverage_level": {
+        "type": "string",
+        "enum": ["basic", "thorough", "exhaustive"],
+        "default": "thorough",
+        "description": "Test coverage level"
+      }
+    },
+    "required": ["source_code"]
+  },
+
+  "output_schema": {
+    "type": "object",
+    "properties": {
+      "test_unit": {
+        "type": "string",
+        "description": "Complete test unit source code"
+      },
+      "test_cases": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "name":        { "type": "string" },
+            "description": { "type": "string" },
+            "test_code":   { "type": "string" }
+          }
+        }
+      }
+    }
+  }
+}

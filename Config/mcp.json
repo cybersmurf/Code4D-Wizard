@@ -12,15 +12,48 @@
     "fallbackModels": ["claude-3.5-sonnet", "o1-preview"]
   },
   "mcpServers": {
-    "embedded": {
+    "delphi_assistant": {
       "command": "embedded",
-      "description": "Built-in Delphi / MES / eMISTR development tools",
+      "description": "Universal Delphi development assistant",
       "tools": [
+        "analyze_code",
+        "refactor_code",
+        "generate_unit_test",
         "analyze_entity",
         "generate_service",
         "query_docs",
         "ask_ai"
-      ]
+      ],
+      "env": {
+        "GITHUB_TOKEN": "${env:GITHUB_TOKEN}"
+      }
     }
+  },
+  "rag": {
+    "enabled": true,
+    "chromadb_url": "http://localhost:8000",
+    "collections": ["delphi_docs", "vcl_docs", "fmx_docs", "rtl_docs"],
+    "auto_index": true,
+    "watch_directories": [
+      "Knowledge/docs/delphi",
+      "Knowledge/docs/vcl",
+      "Knowledge/docs/firemonkey"
+    ]
+  },
+  "lsp": {
+    "enabled": true,
+    "realtime_diagnostics": true,
+    "debounce_ms": 500,
+    "rules": {
+      "missing_try_finally":    "warning",
+      "string_concat_in_loop":  "warning",
+      "unused_variable":        "info",
+      "deprecated_api":         "warning"
+    }
+  },
+  "shortcuts": {
+    "aiAssistant":  "Ctrl+Alt+A",
+    "quickAnalyze": "Ctrl+Shift+A",
+    "generateTest": "Ctrl+Alt+T"
   }
 }

@@ -151,6 +151,8 @@ contains
   C4D.Wizard.Skill.Refactoring in '..\Src\Skills\C4D.Wizard.Skill.Refactoring.pas',
   C4D.Wizard.Skill.Documentation in '..\Src\Skills\C4D.Wizard.Skill.Documentation.pas',
   C4D.Wizard.AIAssistant.View in '..\Src\AIAssistant\C4D.Wizard.AIAssistant.View.pas' {C4DWizardAIAssistantView},
-  C4D.Wizard.IDE.MainMenu.AIAssistant in '..\Src\IDE\MainMenu\C4D.Wizard.IDE.MainMenu.AIAssistant.pas';
+  C4D.Wizard.IDE.MainMenu.AIAssistant in '..\Src\IDE\MainMenu\C4D.Wizard.IDE.MainMenu.AIAssistant.pas',
+  C4D.Wizard.LSP.Diagnostics in '..\Src\LSP\C4D.Wizard.LSP.Diagnostics.pas',
+  C4D.Wizard.LSP.Diagnostics.Generic in '..\Src\LSP\C4D.Wizard.LSP.Diagnostics.Generic.pas';
 
 end.

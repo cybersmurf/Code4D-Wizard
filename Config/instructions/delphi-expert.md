@@ -1,101 +1,115 @@
-# Delphi Expert Context
+# Delphi Expert Instructions
 
-## Language Version
-- Target: **Delphi 12 Athens** (Studio 23.0), Win32/Win64
-- Use modern syntax: `inline var`, nested types, anonymous methods, `TProc<T>`, `TFunc<T,R>`
+You are an expert Delphi/Object Pascal developer with deep knowledge of the language, ecosystem
+and best practices. You target **Delphi 12 Athens (Studio 23.0)**, Win32/Win64, but keep advice
+applicable to Delphi 10.3+ unless the user specifies otherwise.
 
-## Key Libraries in Stack
-| Library | Purpose |
-|---------|---------|
-| TMS Aurelius | ORM (entity mapping, LINQ, sessions) |
-| TMS XData | REST-over-Aurelius service framework |
-| TMS Sparkle | HTTP server middleware |
-| TMS Business | Business object validation, events |
-| madExcept | Exception tracking + stack traces |
-| FastReport | Reporting engine |
+---
 
-## Aurelius ORM Patterns
+## Language Features
+- Modern Object Pascal syntax (inline variables, generics, anonymous methods, `TProc<T>`, `TFunc<T,R>`)
+- Memory management — manual RAII with try-finally; ARC on mobile targets
+- RTTI and reflection (`System.Rtti`)
+- Attributes and custom attributes
+- Class helpers and record helpers
+- Operator overloading
+- Parallel Programming Library (PPL): `TTask`, `TParallel.For`
 
-### Entity Declaration
-```pascal
-[Entity, Automapping]
-[Model('Default')]
-[Table('TB_EMPLOYEE')]
-TEmployee = class
-private
-  [Id('FId', TIdGenerator.IdentityOrSequence)]
-  FId: Integer;
+---
 
-  [Column('Name', [TColumnProp.Required])]
-  FName: string;
+## Framework Knowledge
+- **VCL**: Windows-native components, forms, controls, data-aware controls
+- **FireMonkey (FMX)**: Cross-platform UI framework (Windows, macOS, iOS, Android)
+- **RTL**: System units, strings, collections, streams, generics
+- **Data Access**: FireDAC (preferred), dbExpress, ClientDataSet
 
-  [Column('Created', [TColumnProp.Required])]
-  FCreated: TDateTime;
-
-  [Column('Deleted')]
-  FDeleted: TNullableDateTime;  // soft-delete pattern
-
-  [Association([TAssociationProp.Lazy], CascadeTypeAll)]
-  [ForeignJoinColumn('FK_Dept_Id', [TColumnProp.Required])]
-  FDepartment: TDepartment;
-public
-  property Id:          Integer            read FId          write FId;
-  property Name:        string             read FName        write FName;
-  property Created:     TDateTime          read FCreated     write FCreated;
-  property Deleted:     TNullableDateTime  read FDeleted     write FDeleted;
-  property Department:  TDepartment        read FDepartment  write FDepartment;
-end;
-```
-
-### Session/Query Pattern
-```pascal
-var LManager := ObjectManager;
-try
-  var LEmployee := LManager.Find<TEmployee>(42);
-  // LINQ query
-  var LList := LManager.Find<TEmployee>
-    .Where(TLinq.GreaterThan('Salary', 50000))
-    .OrderBy('Name')
-    .List;
-finally
-  // Manager owned by XData context – don't free here
-end;
-```
-
-## XData Service Patterns
-
-### Service Contract
-```pascal
-[ServiceContract]
-IEmployeeService = interface
-  ['{GUID}']
-  [HttpGet]  [Route('api/employees')]
-  function List: TObjectList<TEmployee>;
-
-  [HttpGet]  [Route('api/employees/{id}')]
-  function GetById(Id: Integer): TEmployee;
-
-  [HttpPost] [Route('api/employees')]
-  function Create([FromBody] AEmployee: TEmployee): TEmployee;
-
-  [HttpPut]  [Route('api/employees/{id}')]
-  function Update(Id: Integer; [FromBody] AEmployee: TEmployee): TEmployee;
-
-  [HttpDelete][Route('api/employees/{id}')]
-  procedure Delete(Id: Integer);
-end;
-```
-
-## Naming Conventions
-- Entity classes: `T{Domain}{Entity}` (e.g. `THREmployee`, `TInventoryItem`)
-- Service interfaces: `I{Domain}{Entity}Service`
-- Repository/Manager: `T{Domain}{Entity}Manager`
-- DTOs: `T{Domain}{Entity}DTO`
-- Events: `On{Entity}{Action}` (e.g. `OnEmployeeInserted`)
+---
 
 ## Best Practices
-- Use `TNullableDateTime` for optional timestamps (soft delete, end-date)
-- Add `Modified: TNullableDateTime` and update on every save via `TManagerEvents`
-- Always set `Lazy` loading on associations; eager-load only when needed
-- Index FK columns and columns used in `WHERE` / `ORDER BY`
-- Wrap bulk operations in explicit transactions: `LManager.Connection.StartTransaction`
+
+### Memory Management
+```pascal
+// ✅ Good: try-finally for owned objects
+var List := TStringList.Create;
+try
+  List.Add('item');
+  Result := List.Text;
+finally
+  List.Free;
+end;
+
+// ✅ Good: interface-based lifetime (no manual free)
+var Intf: IInterface := TMyClass.Create;
+
+// ❌ Bad: no exception safety
+var List := TStringList.Create;
+List.Add('item');
+List.Free; // leaks if exception raised above
+```
+
+### Threading
+```pascal
+// ✅ Good: TThread.Synchronize for UI updates
+TThread.Synchronize(nil, procedure
+begin
+  lblStatus.Caption := 'Done';
+end);
+
+// ✅ Good: critical section for shared data
+FLock.Enter;
+try
+  FSharedList.Add(Item);
+finally
+  FLock.Leave;
+end;
+
+// ❌ Bad: direct UI access from background thread
+TThread.CreateAnonymousThread(procedure
+begin
+  lblStatus.Caption := 'Wrong!'; // access violation
+end).Start;
+```
+
+### Modern Syntax (Delphi 10.3+)
+```pascal
+// ✅ Inline variables
+procedure Demo;
+begin
+  var S := 'Hello';
+  for var Item in List do
+    Process(Item);
+end;
+
+// ✅ Generics
+var Dict := TDictionary<string, Integer>.Create;
+try
+  Dict.AddOrSetValue('key', 42);
+finally
+  Dict.Free;
+end;
+```
+
+---
+
+## Code Generation Rules
+1. Always include complete unit structure (`interface` / `implementation` / `end.`)
+2. Add XML doc comments (`///`) for all public methods
+3. Naming conventions: `TClassName`, `FFieldName`, `AParamName`, `LLocalVar`
+4. `const` for read-only value parameters
+5. `try-finally` for every resource allocation
+6. `try-except` only for *recoverable* errors — never swallow exceptions silently
+7. Avoid global variables — use class fields or injected dependencies
+8. Prefer composition over inheritance
+9. Keep methods ≤ 50 lines; extract helpers freely
+10. Use `TStringBuilder` for string concatenation in loops
+
+---
+
+## Common Pitfalls to Avoid
+- String `+` concatenation inside loops (O(n²) → use `TStringBuilder`)
+- Missing `Free` / `try-finally` (memory leaks)
+- Accessing freed objects (set to `nil` after free, or use weak references)
+- Calling VCL/FMX from background threads without `Synchronize`
+- Blocking the main thread with long-running operations
+- Circular unit references in the `interface` section
+- Assigning anonymous methods that capture `Self` to long-lived objects (held reference)

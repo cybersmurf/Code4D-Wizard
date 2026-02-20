@@ -1,0 +1,67 @@
+{
+  "name": "analyze_code",
+  "version": "1.0",
+  "description": "Analyze Delphi code for potential issues, anti-patterns and improvements",
+  "category": "code-analysis",
+  "agent_mode": "single-tool",
+
+  "instructions": ["base", "delphi-expert"],
+
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "code": {
+        "type": "string",
+        "description": "Delphi source code to analyze"
+      },
+      "framework": {
+        "type": "string",
+        "enum": ["VCL", "FMX", "Console", "Service"],
+        "description": "Application framework context"
+      },
+      "check_memory": {
+        "type": "boolean",
+        "default": true,
+        "description": "Check for memory leaks and management issues"
+      },
+      "check_threading": {
+        "type": "boolean",
+        "default": true,
+        "description": "Check for threading issues"
+      },
+      "check_performance": {
+        "type": "boolean",
+        "default": true,
+        "description": "Check for performance issues"
+      }
+    },
+    "required": ["code"]
+  },
+
+  "output_schema": {
+    "type": "object",
+    "properties": {
+      "issues": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "severity":    { "type": "string", "enum": ["error", "warning", "info"] },
+            "line":        { "type": "integer" },
+            "category":    { "type": "string" },
+            "message":     { "type": "string" },
+            "suggestion":  { "type": "string" },
+            "code_sample": { "type": "string" }
+          }
+        }
+      },
+      "metrics": {
+        "type": "object",
+        "properties": {
+          "complexity":            { "type": "integer" },
+          "maintainability_index": { "type": "number" }
+        }
+      }
+    }
+  }
+}

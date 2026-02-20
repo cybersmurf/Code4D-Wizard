@@ -1,7 +1,7 @@
 {
   "name": "refactor_code",
-  "version": "1.0",
-  "description": "Refactor and modernise existing Delphi code",
+  "version": "1.1",
+  "description": "Refactor Delphi code to improve quality and maintainability",
   "category": "refactoring",
   "agent_mode": "single-tool",
   "instructions": ["base", "delphi-expert"],
@@ -12,13 +12,44 @@
         "type": "string",
         "description": "Delphi source code to refactor"
       },
+      "refactoring_type": {
+        "type": "string",
+        "enum": [
+          "extract_method",
+          "extract_interface",
+          "rename",
+          "simplify",
+          "optimize",
+          "modernize"
+        ],
+        "description": "Type of refactoring to apply"
+      },
       "goal": {
         "type": "string",
         "description": "Refactoring goal (e.g. fix naming, remove duplication, fix N+1, modernise syntax)"
+      },
+      "target_delphi_version": {
+        "type": "string",
+        "enum": ["Delphi 10.3 Rio", "Delphi 10.4 Sydney", "Delphi 11 Alexandria", "Delphi 12 Athens"],
+        "description": "Target Delphi version for modern syntax"
       }
     },
-    "required": ["source_code"]
+    "required": ["source_code", "refactoring_type"]
   },
+  "output_schema": {
+    "type": "object",
+    "properties": {
+      "refactored_code": { "type": "string" },
+      "changes": {
+        "type": "array",
+        "items": { "type": "string" },
+        "description": "List of changes made"
+      },
+      "notes": { "type": "string" }
+    }
+  }
+}
+
   "output_schema": {
     "type": "object",
     "properties": {
